@@ -49,8 +49,12 @@ def clean_and_fix_data(df, country_region_list=[], align_zero=False, per_populat
         raise ValueError("Empty country/region list.")
 
     # fix missing data
-    if subset.notna().sum().min() > 3:
-        subset = subset.interpolate(method='cubic').ffill().bfill()
+    # if subset.notna().sum().min() > 3:
+    # if subset.notna().sum().min() / len(subset) > 0.33:  # apply interpolation if at least a 1/3 of dates have data
+    #     # subset = subset.interpolate(method='spline', order=2)
+    #     subset = subset.interpolate(method='linear')
+
+    subset = subset.ffill()
 
     if align_zero and len(country_region_list) > 1:
 
