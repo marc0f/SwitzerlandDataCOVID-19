@@ -4,8 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+SOURCE = 'OpenZH'  # 'custom' or 'OpenZH'
+
 FIGSIZE = (20, 10)
-CANTONS_LIST = ["Ticino"]
+CANTONS_LIST = [
+    {'name': "Ticino", 'abb': 'TI'}]
 ALIGN_ZERO = False
 PER_POPULATION = False
 
@@ -16,26 +19,59 @@ POPULATION = dict(
 
 def load_data_from_source():
 
-    base_path = "data"
+    if SOURCE == 'custom':
+        base_path = "data"
 
-    filepath_confirmed = os.path.join(base_path, "time_series_19-covid-Confirmed.csv")
-    filepath_deaths = os.path.join(base_path, "time_series_19-covid-Deaths.csv")
-    filepath_hospitalized = os.path.join(base_path, "time_series_19-covid-Hospitalized.csv")
-    filepath_icu = os.path.join(base_path, "time_series_19-covid-ICU.csv")
-    filepath_intubated = os.path.join(base_path, "time_series_19-covid-Intubated.csv")
+        filepath_confirmed = os.path.join(base_path, "time_series_19-covid-Confirmed.csv")
+        filepath_deaths = os.path.join(base_path, "time_series_19-covid-Deaths.csv")
+        filepath_hospitalized = os.path.join(base_path, "time_series_19-covid-Hospitalized.csv")
+        filepath_icu = os.path.join(base_path, "time_series_19-covid-ICU.csv")
+        filepath_intubated = os.path.join(base_path, "time_series_19-covid-Intubated.csv")
 
-    df_confirmed = pd.read_csv(filepath_confirmed)
-    df_deaths = pd.read_csv(filepath_deaths)
-    df_hospitalized = pd.read_csv(filepath_hospitalized)
-    df_icu = pd.read_csv(filepath_icu)
-    df_intubated = pd.read_csv(filepath_intubated)
+        df_confirmed = pd.read_csv(filepath_confirmed)
+        df_deaths = pd.read_csv(filepath_deaths)
+        df_hospitalized = pd.read_csv(filepath_hospitalized)
+        df_icu = pd.read_csv(filepath_icu)
+        df_intubated = pd.read_csv(filepath_intubated)
+
+    elif SOURCE == 'OpenZH':
+
+        df_confirmed = None
+        df_deaths = None
+        df_hospitalized = None
+        df_icu = None
+        df_intubated = None
+
+        for canton in CANTONS_LIST:
+            base_path = f"covid_19/fallzahlen_kanton_total_csv/COVID19_Fallzahlen_Kanton_{canton.get('abb')}_total.csv"
+
+            df_canton = pd.read_csv(base_path)
+            df_canton.set_index('date', inplace=True, drop=True)
+            df_canton.index =pd.to_datetime(df_canton.index)
+
+            df_confirmed = pd.DataFrame(df_canton['ncumul_conf'].rename(canton.get('name'))) if df_confirmed is None \
+                else df_confirmed.join(df_canton['ncumul_conf'].rename(canton.get('name')))
+
+            df_deaths = pd.DataFrame(df_canton['ncumul_deceased'].rename(canton.get('name'))) if df_deaths is None \
+                else df_deaths.join(df_canton['ncumul_deceased'].rename(canton.get('name')))
+
+            df_hospitalized = pd.DataFrame(df_canton['ncumul_hosp'].rename(canton.get('name'))) if df_hospitalized is None else \
+                df_hospitalized.join(df_canton['ncumul_hosp'].rename(canton.get('name')))
+
+            df_icu = pd.DataFrame(df_canton['ncumul_ICU'].rename(canton.get('name'))) if df_icu is None else \
+                df_icu.join(df_canton['ncumul_ICU'].rename(canton.get('name')))
+
+            df_intubated = pd.DataFrame(df_canton['ncumul_vent'].rename(canton.get('name'))) if df_intubated is None else \
+                df_intubated.join(df_canton['ncumul_vent'].rename(canton.get('name')))
 
     return df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated
 
 
-def clean_and_fix_data(df, country_region_list=[], align_zero=False, per_population=False):
+def clean_and_fix_data(df, align_zero=False, per_population=False):
 
-    if country_region_list:
+    if SOURCE == 'custom':
+
+        country_region_list = [canton['name'] for canton in CANTONS_LIST]
 
         subset = df[df['Province/State'].isin(country_region_list)].copy()
         subset = subset.set_index('Province/State')
@@ -45,8 +81,8 @@ def clean_and_fix_data(df, country_region_list=[], align_zero=False, per_populat
         subset = subset.T
         subset.index = pd.to_datetime(subset.index)
 
-    else:
-        raise ValueError("Empty country/region list.")
+    elif SOURCE == 'OpenZH':
+        subset = df
 
     # fix missing data
     # if subset.notna().sum().min() > 3:
@@ -56,7 +92,7 @@ def clean_and_fix_data(df, country_region_list=[], align_zero=False, per_populat
 
     subset = subset.ffill()
 
-    if align_zero and len(country_region_list) > 1:
+    if align_zero and len(CANTONS_LIST) > 1:
 
         support_df = subset[subset > 0]
         support_df = support_df.dropna(axis=0, how='all')
@@ -133,17 +169,18 @@ def plot_multi(data, cols=None, spacing=.1, same_plot=False, **kwargs):
         ax.legend(lines, labels, loc=2)
 
     plt.gcf().autofmt_xdate()
+    plt.grid(axis='y', color='0.95')
 
 
 if __name__ == '__main__':
 
     df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated = load_data_from_source()
 
-    df_confirmed = clean_and_fix_data(df_confirmed, CANTONS_LIST, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
-    df_deaths = clean_and_fix_data(df_deaths, CANTONS_LIST, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
-    df_hospitalized = clean_and_fix_data(df_hospitalized, CANTONS_LIST, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
-    df_icu = clean_and_fix_data(df_icu, CANTONS_LIST, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
-    df_intubated = clean_and_fix_data(df_intubated, CANTONS_LIST, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
+    df_confirmed = clean_and_fix_data(df_confirmed, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
+    df_deaths = clean_and_fix_data(df_deaths, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
+    df_hospitalized = clean_and_fix_data(df_hospitalized,align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
+    df_icu = clean_and_fix_data(df_icu, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
+    df_intubated = clean_and_fix_data(df_intubated, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
 
     # plot cumulative data
     plot_multi(df_confirmed, figsize=FIGSIZE, title="# of confirmed", same_plot=ALIGN_ZERO or PER_POPULATION, marker='o')
