@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-SOURCE = 'custom'  # 'custom' or 'OpenZH'
+SOURCE = 'OpenZH'  # 'custom' or 'OpenZH'
 
 FIGSIZE = (20, 10)
 CANTONS_LIST = [
