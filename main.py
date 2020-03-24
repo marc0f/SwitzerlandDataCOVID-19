@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-SOURCE = 'OpenZH'  # 'custom' or 'OpenZH'
+SOURCE = 'custom'  # 'custom' or 'OpenZH'
 
 FIGSIZE = (20, 10)
 CANTONS_LIST = [
@@ -196,12 +196,19 @@ if __name__ == '__main__':
     plot_multi(df_icu.diff(), figsize=FIGSIZE, title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION, kind='bar')
     plot_multi(df_intubated.diff(), figsize=FIGSIZE, title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION, kind='bar')
 
-    # plot percentage changes from previous day
-    plot_multi(df_confirmed.pct_change(),  figsize=FIGSIZE, title="Daily confirmed % change", same_plot=ALIGN_ZERO or PER_POPULATION)
-    plot_multi(df_deaths.pct_change(), figsize=FIGSIZE, title="Daily deaths % change", same_plot=ALIGN_ZERO or PER_POPULATION)
-    plot_multi(df_hospitalized.pct_change(), figsize=FIGSIZE, title="Daily recovered % change", same_plot=ALIGN_ZERO or PER_POPULATION)
-    plot_multi(df_icu.pct_change(), figsize=FIGSIZE, title="Daily ICU % change", same_plot=ALIGN_ZERO or PER_POPULATION)
-    plot_multi(df_intubated.pct_change(), figsize=FIGSIZE, title="Daily intubated % change", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # # plot percentage changes day over day
+    # plot_multi(df_confirmed.pct_change(),  figsize=FIGSIZE, title="Daily confirmed % growth change", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # plot_multi(df_deaths.pct_change(), figsize=FIGSIZE, title="Daily deaths % change", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # plot_multi(df_hospitalized.pct_change(), figsize=FIGSIZE, title="Daily recovered % change", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # plot_multi(df_icu.pct_change(), figsize=FIGSIZE, title="Daily ICU % change", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # plot_multi(df_intubated.pct_change(), figsize=FIGSIZE, title="Daily intubated % change", same_plot=ALIGN_ZERO or PER_POPULATION)
+
+    # plot percentage growth day over day
+    plot_multi(df_confirmed.cumsum().pct_change(),  figsize=FIGSIZE, title="Confirmed % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
+    plot_multi(df_deaths.cumsum().pct_change(), figsize=FIGSIZE, title="Deaths % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
+    plot_multi(df_hospitalized.cumsum().pct_change(), figsize=FIGSIZE, title="Recovered % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
+    plot_multi(df_icu.cumsum().pct_change(), figsize=FIGSIZE, title="ICU % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
+    plot_multi(df_intubated.cumsum().pct_change(), figsize=FIGSIZE, title="Intubated % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
 
     # # plot percentage changes from cumsum
     # plot_multi(df_confirmed / df_confirmed.cumsum(),  figsize=FIGSIZE, title="Daily confirmed % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
