@@ -7,15 +7,15 @@ Plot data on Switzerland COVID-19.
 
 ## Current situation in Ticino
 
-![confirmed](images/OpenZH#_of_confirmed.png)
+![confirmed](images/OpenZH%23_of_confirmed.png)
 
-![Deaths](images/OpenZH#_of_deaths.png)
+![Deaths](images/OpenZH%23_of_deaths.png)
 
-![Hospitalized](images/OpenZH#_of_hospitalized.png)
+![Hospitalized](images/OpenZH%23_of_hospitalized.png)
 
-![ICU](images/OpenZH#_of_ICU.png)
+![ICU](images/OpenZH%23_of_ICU.png)
 
-![Intubated](images/OpenZH#_of_intubated.png)
+![Intubated](images/OpenZH%23_of_intubated.png)
 
 
 ## Get started
