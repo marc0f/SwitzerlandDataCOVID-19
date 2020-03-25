@@ -5,6 +5,19 @@ Plot data on Switzerland COVID-19.
 **Project status**: Work in Progress.
 
 
+## Current situation in Ticino
+
+![confirmed](images/OpenZH#_of_confirmed.png)
+
+![Deaths](images/OpenZH#_of_deaths.png)
+
+![Hospitalized](images/OpenZH#_of_hospitalized.png)
+
+![ICU](images/OpenZH#_of_ICU.png)
+
+![Intubated](images/OpenZH#_of_intubated.png)
+
+
 ## Get started
 
 Prepare the data source by cloning the Open_ZH repo in the root folder:

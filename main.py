@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 
 SOURCE = 'OpenZH'  # 'custom' or 'OpenZH'
+PLOT_PATH = "images"
 
 FIGSIZE = (20, 10)
 CANTONS_LIST = [
@@ -171,6 +172,8 @@ def plot_multi(data, cols=None, spacing=.1, same_plot=False, **kwargs):
     plt.gcf().autofmt_xdate()
     plt.grid(axis='y', color='0.95')
 
+    plt.savefig(os.path.join(PLOT_PATH, SOURCE + kwargs.get('title').replace(" ", "_") + ".png"))
+
 
 if __name__ == '__main__':
 
@@ -190,7 +193,7 @@ if __name__ == '__main__':
     plot_multi(df_intubated, figsize=FIGSIZE, title="# of intubated", same_plot=ALIGN_ZERO or PER_POPULATION, marker='o')
     #
     # plot diff from previous day
-    plot_multi(df_confirmed.diff(),  figsize=FIGSIZE, title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION, kind='bar')
+    plot_multi(df_confirmed.diff(), figsize=FIGSIZE, title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION, kind='bar')
     plot_multi(df_deaths.diff(), figsize=FIGSIZE, title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION, kind='bar')
     plot_multi(df_hospitalized.diff(), figsize=FIGSIZE, title="Daily hospitalizzed", same_plot=ALIGN_ZERO or PER_POPULATION, kind='bar')
     plot_multi(df_icu.diff(), figsize=FIGSIZE, title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION, kind='bar')
@@ -204,7 +207,7 @@ if __name__ == '__main__':
     # plot_multi(df_intubated.pct_change(), figsize=FIGSIZE, title="Daily intubated % change", same_plot=ALIGN_ZERO or PER_POPULATION)
 
     # plot percentage growth day over day
-    plot_multi(df_confirmed.cumsum().pct_change(),  figsize=FIGSIZE, title="Confirmed % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
+    plot_multi(df_confirmed.cumsum().pct_change(), figsize=FIGSIZE, title="Confirmed % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
     plot_multi(df_deaths.cumsum().pct_change(), figsize=FIGSIZE, title="Deaths % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
     plot_multi(df_hospitalized.cumsum().pct_change(), figsize=FIGSIZE, title="Recovered % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
     plot_multi(df_icu.cumsum().pct_change(), figsize=FIGSIZE, title="ICU % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
