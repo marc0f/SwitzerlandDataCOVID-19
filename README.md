@@ -30,7 +30,7 @@ Display data by run:
 
     python main.py
     
-All images are saved in __images__ folder.
+All images are saved in _images_ folder.
 
 ## Source
 
