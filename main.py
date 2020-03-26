@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-SOURCE = 'OpenZH'  # 'custom' or 'OpenZH'
+SOURCE = 'OpenZH'  # 'local' or 'OpenZH'
 PLOT_PATH = "images"
 
 FIGSIZE = (20, 10)
@@ -20,7 +20,7 @@ POPULATION = dict(
 
 def load_data_from_source():
 
-    if SOURCE == 'custom':
+    if SOURCE == 'local':
         base_path = "data"
 
         filepath_confirmed = os.path.join(base_path, "time_series_19-covid-Confirmed.csv")
@@ -70,7 +70,7 @@ def load_data_from_source():
 
 def clean_and_fix_data(df, align_zero=False, per_population=False):
 
-    if SOURCE == 'custom':
+    if SOURCE == 'local':
 
         country_region_list = [canton['name'] for canton in CANTONS_LIST]
 
