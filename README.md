@@ -7,15 +7,17 @@ Plot data on Switzerland COVID-19.
 
 ## Current situation in Ticino
 
-![confirmed](images/OpenZH%23_of_confirmed.png)
+**NOTE:** More plots in the _images_ folder.
 
-![Deaths](images/OpenZH%23_of_deaths.png)
+![confirmed](images/local%23_of_confirmed.png)
 
-![Hospitalized](images/OpenZH%23_of_hospitalized.png)
+![Deaths](images/lcoal%23_of_deaths.png)
 
-![ICU](images/OpenZH%23_of_ICU.png)
+![Hospitalized](images/local%23_of_hospitalized.png)
 
-![Intubated](images/OpenZH%23_of_intubated.png)
+![ICU](images/local%23_of_ICU.png)
+
+![Intubated](images/local%23_of_intubated.png)
 
 
 ## Get started
@@ -27,6 +29,8 @@ Prepare the data source by cloning the Open_ZH repo in the root folder:
 Display data by run:
 
     python main.py
+    
+All images are saved in __images__ folder.
 
 ## Source
 
