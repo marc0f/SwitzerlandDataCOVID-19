@@ -65,6 +65,12 @@ def load_data_from_source():
             df_intubated = pd.DataFrame(df_canton['ncumul_vent'].rename(canton.get('name'))) if df_intubated is None else \
                 df_intubated.join(df_canton['ncumul_vent'].rename(canton.get('name')))
 
+            # fix: for Ticino intubated moved from ncumul_vent to ncumul_ICU_intub after 2020-03-23,08:00
+            mask_ncumul_ICU_intub_nan = df_canton['ncumul_ICU_intub'].notna()
+            df_intubated.loc[mask_ncumul_ICU_intub_nan, canton.get('name')] = \
+                df_intubated[mask_ncumul_ICU_intub_nan][canton.get('name')].fillna(0) + \
+                df_canton['ncumul_ICU_intub'][mask_ncumul_ICU_intub_nan]
+
     return df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated
 
 
