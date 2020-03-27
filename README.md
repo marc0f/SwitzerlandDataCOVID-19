@@ -11,7 +11,7 @@ Plot data on Switzerland COVID-19.
 
 ![Confirmed](images/OpenZH%23_of_confirmed.png)
 
-![Deaths](images/local%23_of_deaths.png)
+![Deaths](images/OpenZH%23_of_deaths.png)
 
 ![Hospitalized](images/OpenZH%23_of_hospitalized.png)
 
