@@ -9,15 +9,15 @@ Plot data on Switzerland COVID-19.
 
 **NOTE:** More plots in the _images_ folder.
 
-![confirmed](images/local%23_of_confirmed.png)
+![Confirmed](images/OpenZH%23_of_confirmed.png)
 
-![Deaths](images/lcoal%23_of_deaths.png)
+![Deaths](images/local%23_of_deaths.png)
 
-![Hospitalized](images/local%23_of_hospitalized.png)
+![Hospitalized](images/OpenZH%23_of_hospitalized.png)
 
-![ICU](images/local%23_of_ICU.png)
+![ICU](images/OpenZH%23_of_ICU.png)
 
-![Intubated](images/local%23_of_intubated.png)
+![Intubated](images/OpenZH%23_of_intubated.png)
 
 
 ## Get started
