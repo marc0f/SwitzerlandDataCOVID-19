@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-SOURCE = 'OpenZH'  # 'local' or 'OpenZH'
+SOURCE = 'local'  # 'local' or 'OpenZH'
 PLOT_PATH = "images"
 
 FIGSIZE = (20, 10)
@@ -65,11 +65,11 @@ def load_data_from_source():
             df_intubated = pd.DataFrame(df_canton['ncumul_vent'].rename(canton.get('name'))) if df_intubated is None else \
                 df_intubated.join(df_canton['ncumul_vent'].rename(canton.get('name')))
 
-            # fix: for Ticino intubated moved from ncumul_vent to ncumul_ICU_intub after 2020-03-23,08:00
-            mask_ncumul_ICU_intub_nan = df_canton['ncumul_ICU_intub'].notna()
+            # fix: for Ticino intubated moved from ncumul_vent to ninst_ICU_intub after 2020-03-23,08:00
+            mask_ncumul_ICU_intub_nan = df_canton['ninst_ICU_intub'].notna()
             df_intubated.loc[mask_ncumul_ICU_intub_nan, canton.get('name')] = \
                 df_intubated[mask_ncumul_ICU_intub_nan][canton.get('name')].fillna(0) + \
-                df_canton['ncumul_ICU_intub'][mask_ncumul_ICU_intub_nan]
+                df_canton['ninst_ICU_intub'][mask_ncumul_ICU_intub_nan]
 
     return df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated
 
@@ -178,7 +178,8 @@ def plot_multi(data, cols=None, spacing=.1, same_plot=False, **kwargs):
     plt.gcf().autofmt_xdate()
     plt.grid(axis='y', color='0.95')
 
-    plt.savefig(os.path.join(PLOT_PATH, SOURCE + kwargs.get('title').replace(" ", "_") + ".png"))
+    if SOURCE == 'OpenZH':
+        plt.savefig(os.path.join(PLOT_PATH, SOURCE + kwargs.get('title').replace(" ", "_") + ".png"))
 
 
 if __name__ == '__main__':
