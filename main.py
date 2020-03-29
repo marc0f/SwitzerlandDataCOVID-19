@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-SOURCE = 'local'  # 'local' or 'OpenZH'
+SOURCE = 'OpenZH'  # 'local' or 'OpenZH'
 PLOT_PATH = "images"
 
 FIGSIZE = (20, 10)
@@ -16,6 +16,8 @@ PER_POPULATION = False
 POPULATION = dict(
     Ticino=353709
 )
+
+AVG_ROLLING_WINDOW = 3
 
 
 def load_data_from_source():
@@ -74,7 +76,7 @@ def load_data_from_source():
     return df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated
 
 
-def clean_and_fix_data(df, align_zero=False, per_population=False):
+def clean_and_fix_data(df, align_zero=False, per_population=False, avg_rolling_window=False):
 
     if SOURCE == 'local':
 
@@ -129,6 +131,10 @@ def clean_and_fix_data(df, align_zero=False, per_population=False):
 
         for col in subset:
             subset[col] /= POPULATION.get(col) / 1e5
+
+    if avg_rolling_window:
+        avg_subset = subset.rolling(window=avg_rolling_window).mean()
+        subset = subset.join(avg_subset.add_suffix(suffix=f"({avg_rolling_window}-days avg)"))
 
     return subset
 
@@ -186,25 +192,25 @@ if __name__ == '__main__':
 
     df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated = load_data_from_source()
 
-    df_confirmed = clean_and_fix_data(df_confirmed, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
-    df_deaths = clean_and_fix_data(df_deaths, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
-    df_hospitalized = clean_and_fix_data(df_hospitalized,align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
-    df_icu = clean_and_fix_data(df_icu, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
-    df_intubated = clean_and_fix_data(df_intubated, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
+    df_confirmed = clean_and_fix_data(df_confirmed, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
+    df_deaths = clean_and_fix_data(df_deaths, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
+    df_hospitalized = clean_and_fix_data(df_hospitalized,align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
+    df_icu = clean_and_fix_data(df_icu, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
+    df_intubated = clean_and_fix_data(df_intubated, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
 
     # plot cumulative data
-    plot_multi(df_confirmed, figsize=FIGSIZE, title="# of confirmed", same_plot=ALIGN_ZERO or PER_POPULATION, marker='o')
-    plot_multi(df_deaths, figsize=FIGSIZE, title="# of deaths", same_plot=ALIGN_ZERO or PER_POPULATION, marker='o')
-    plot_multi(df_hospitalized, figsize=FIGSIZE, title="# of hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION, marker='o')
-    plot_multi(df_icu, figsize=FIGSIZE, title="# of ICU", same_plot=ALIGN_ZERO or PER_POPULATION, marker='o')
-    plot_multi(df_intubated, figsize=FIGSIZE, title="# of intubated", same_plot=ALIGN_ZERO or PER_POPULATION, marker='o')
+    plot_multi(df_confirmed, figsize=FIGSIZE, title="# of confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(df_deaths, figsize=FIGSIZE, title="# of deaths", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(df_hospitalized, figsize=FIGSIZE, title="# of hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(df_icu, figsize=FIGSIZE, title="# of ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(df_intubated, figsize=FIGSIZE, title="# of intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     #
     # plot diff from previous day
-    plot_multi(df_confirmed.diff(), figsize=FIGSIZE, title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION, kind='bar')
-    plot_multi(df_deaths.diff(), figsize=FIGSIZE, title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION, kind='bar')
-    plot_multi(df_hospitalized.diff(), figsize=FIGSIZE, title="Daily hospitalizzed", same_plot=ALIGN_ZERO or PER_POPULATION, kind='bar')
-    plot_multi(df_icu.diff(), figsize=FIGSIZE, title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION, kind='bar')
-    plot_multi(df_intubated.diff(), figsize=FIGSIZE, title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION, kind='bar')
+    plot_multi(df_confirmed.diff(), figsize=FIGSIZE, title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
+    plot_multi(df_deaths.diff(), figsize=FIGSIZE, title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION  or AVG_ROLLING_WINDOW, kind='bar')
+    plot_multi(df_hospitalized.diff(), figsize=FIGSIZE, title="Daily hospitalizzed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
+    plot_multi(df_icu.diff(), figsize=FIGSIZE, title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
+    plot_multi(df_intubated.diff(), figsize=FIGSIZE, title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
 
     # # plot percentage changes day over day
     # plot_multi(df_confirmed.pct_change(),  figsize=FIGSIZE, title="Daily confirmed % growth change", same_plot=ALIGN_ZERO or PER_POPULATION)
@@ -214,11 +220,11 @@ if __name__ == '__main__':
     # plot_multi(df_intubated.pct_change(), figsize=FIGSIZE, title="Daily intubated % change", same_plot=ALIGN_ZERO or PER_POPULATION)
 
     # plot percentage growth day over day
-    plot_multi(df_confirmed.cumsum().pct_change(), figsize=FIGSIZE, title="Confirmed % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
-    plot_multi(df_deaths.cumsum().pct_change(), figsize=FIGSIZE, title="Deaths % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
-    plot_multi(df_hospitalized.cumsum().pct_change(), figsize=FIGSIZE, title="Recovered % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
-    plot_multi(df_icu.cumsum().pct_change(), figsize=FIGSIZE, title="ICU % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
-    plot_multi(df_intubated.cumsum().pct_change(), figsize=FIGSIZE, title="Intubated % growth", same_plot=ALIGN_ZERO or PER_POPULATION)
+    plot_multi(df_confirmed.cumsum().pct_change(), figsize=FIGSIZE, title="Confirmed % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    plot_multi(df_deaths.cumsum().pct_change(), figsize=FIGSIZE, title="Deaths % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    plot_multi(df_hospitalized.cumsum().pct_change(), figsize=FIGSIZE, title="Recovered % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    plot_multi(df_icu.cumsum().pct_change(), figsize=FIGSIZE, title="ICU % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    plot_multi(df_intubated.cumsum().pct_change(), figsize=FIGSIZE, title="Intubated % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
 
     # # plot percentage changes from cumsum
     # plot_multi(df_confirmed / df_confirmed.cumsum(),  figsize=FIGSIZE, title="Daily confirmed % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
