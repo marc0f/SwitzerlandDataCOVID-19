@@ -134,7 +134,7 @@ def clean_and_fix_data(df, align_zero=False, per_population=False, avg_rolling_w
 
     if avg_rolling_window:
         avg_subset = subset.rolling(window=avg_rolling_window).mean()
-        subset = subset.join(avg_subset.add_suffix(suffix=f"({avg_rolling_window}-days avg)"))
+        subset = subset.join(avg_subset.add_suffix(suffix=f" ({avg_rolling_window}-days avg)"))
 
     return subset
 
