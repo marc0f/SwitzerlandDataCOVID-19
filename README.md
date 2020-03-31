@@ -19,6 +19,7 @@ Plot data on Switzerland COVID-19.
 
 ![Intubated](images/OpenZH%23_of_intubated.png)
 
+![Released](images/OpenZH%23_of_released.png)
 
 ## Get started
 
