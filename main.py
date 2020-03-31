@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-SOURCE = 'local'  # 'local' or 'OpenZH'
+SOURCE = 'OpenZH'  # 'local' or 'OpenZH'
 PLOT_PATH = "images"
 
 FIGSIZE = (20, 10)
