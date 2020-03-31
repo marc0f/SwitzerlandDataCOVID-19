@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-SOURCE = 'OpenZH'  # 'local' or 'OpenZH'
+SOURCE = 'local'  # 'local' or 'OpenZH'
 PLOT_PATH = "images"
 
 FIGSIZE = (20, 10)
@@ -22,6 +22,13 @@ AVG_ROLLING_WINDOW = 3
 
 def load_data_from_source():
 
+    df_confirmed = None
+    df_deaths = None
+    df_hospitalized = None
+    df_icu = None
+    df_intubated = None
+    df_released = None
+
     if SOURCE == 'local':
         base_path = "data"
 
@@ -30,20 +37,16 @@ def load_data_from_source():
         filepath_hospitalized = os.path.join(base_path, "time_series_19-covid-Hospitalized.csv")
         filepath_icu = os.path.join(base_path, "time_series_19-covid-ICU.csv")
         filepath_intubated = os.path.join(base_path, "time_series_19-covid-Intubated.csv")
+        filepath_released = os.path.join(base_path, "time_series_19-covid-Released.csv")
 
         df_confirmed = pd.read_csv(filepath_confirmed)
         df_deaths = pd.read_csv(filepath_deaths)
         df_hospitalized = pd.read_csv(filepath_hospitalized)
         df_icu = pd.read_csv(filepath_icu)
         df_intubated = pd.read_csv(filepath_intubated)
+        df_released = pd.read_csv(filepath_released)
 
     elif SOURCE == 'OpenZH':
-
-        df_confirmed = None
-        df_deaths = None
-        df_hospitalized = None
-        df_icu = None
-        df_intubated = None
 
         for canton in CANTONS_LIST:
             base_path = f"covid_19/fallzahlen_kanton_total_csv/COVID19_Fallzahlen_Kanton_{canton.get('abb')}_total.csv"
@@ -68,12 +71,16 @@ def load_data_from_source():
                 df_intubated.join(df_canton['ncumul_vent'].rename(canton.get('name')))
 
             # fix: for Ticino intubated moved from ncumul_vent to ninst_ICU_intub after 2020-03-23,08:00
-            mask_ncumul_ICU_intub_nan = df_canton['ninst_ICU_intub'].notna()
-            df_intubated.loc[mask_ncumul_ICU_intub_nan, canton.get('name')] = \
-                df_intubated[mask_ncumul_ICU_intub_nan][canton.get('name')].fillna(0) + \
-                df_canton['ninst_ICU_intub'][mask_ncumul_ICU_intub_nan]
+            # mask_ncumul_ICU_intub_nan = df_canton['ninst_ICU_intub'].notna()
+            # df_intubated.loc[mask_ncumul_ICU_intub_nan, canton.get('name')] = \
+            #     df_intubated[mask_ncumul_ICU_intub_nan][canton.get('name')].fillna(0) + \
+            #     df_canton['ninst_ICU_intub'][mask_ncumul_ICU_intub_nan]
 
-    return df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated
+            df_released = pd.DataFrame(
+                df_canton['ncumul_released'].rename(canton.get('name'))) if df_released is None else \
+                df_released.join(df_canton['ncumul_released'].rename(canton.get('name')))
+
+    return df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated, df_released
 
 
 def clean_and_fix_data(df, align_zero=False, per_population=False, avg_rolling_window=False):
@@ -190,13 +197,14 @@ def plot_multi(data, cols=None, spacing=.1, same_plot=False, **kwargs):
 
 if __name__ == '__main__':
 
-    df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated = load_data_from_source()
+    df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated, df_released = load_data_from_source()
 
     df_confirmed = clean_and_fix_data(df_confirmed, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
     df_deaths = clean_and_fix_data(df_deaths, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
     df_hospitalized = clean_and_fix_data(df_hospitalized,align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
     df_icu = clean_and_fix_data(df_icu, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
     df_intubated = clean_and_fix_data(df_intubated, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
+    df_released = clean_and_fix_data(df_released, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
 
     # plot cumulative data
     plot_multi(df_confirmed, figsize=FIGSIZE, title="# of confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
@@ -204,6 +212,7 @@ if __name__ == '__main__':
     plot_multi(df_hospitalized, figsize=FIGSIZE, title="# of hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     plot_multi(df_icu, figsize=FIGSIZE, title="# of ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     plot_multi(df_intubated, figsize=FIGSIZE, title="# of intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(df_released, figsize=FIGSIZE, title="# of released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     #
     # plot diff from previous day
     plot_multi(df_confirmed.diff(), figsize=FIGSIZE, title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
@@ -211,6 +220,7 @@ if __name__ == '__main__':
     plot_multi(df_hospitalized.diff(), figsize=FIGSIZE, title="Daily hospitalizzed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
     plot_multi(df_icu.diff(), figsize=FIGSIZE, title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
     plot_multi(df_intubated.diff(), figsize=FIGSIZE, title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
+    plot_multi(df_released.diff(), figsize=FIGSIZE, title="Daily released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
 
     # # plot percentage changes day over day
     # plot_multi(df_confirmed.pct_change(),  figsize=FIGSIZE, title="Daily confirmed % growth change", same_plot=ALIGN_ZERO or PER_POPULATION)
@@ -225,6 +235,7 @@ if __name__ == '__main__':
     plot_multi(df_hospitalized.cumsum().pct_change(), figsize=FIGSIZE, title="Recovered % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
     plot_multi(df_icu.cumsum().pct_change(), figsize=FIGSIZE, title="ICU % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
     plot_multi(df_intubated.cumsum().pct_change(), figsize=FIGSIZE, title="Intubated % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    plot_multi(df_released.cumsum().pct_change(), figsize=FIGSIZE, title="Relased % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
 
     # # plot percentage changes from cumsum
     # plot_multi(df_confirmed / df_confirmed.cumsum(),  figsize=FIGSIZE, title="Daily confirmed % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
