@@ -1,10 +1,16 @@
 import os
+import argparse
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-SOURCE = 'OpenZH'  # 'local' or 'OpenZH'
+parser = argparse.ArgumentParser(description='Generate plots from COVID-19 data. Two sources available: local and OpenZH.')
+parser.add_argument('--source', type=str, help='data source', default="OpenZH")
+args = parser.parse_args()
+
+
+SOURCE = args.source  # 'local' or 'OpenZH'
 PLOT_PATH = "images"
 
 FIGSIZE = (20, 10)
