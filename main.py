@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 parser = argparse.ArgumentParser(description='Generate plots from COVID-19 data. Two sources available: local and OpenZH.')
-parser.add_argument('--source', type=str, help='data source', default="local")
+parser.add_argument('--source', type=str, help='data source', default="OpenZH")
 args = parser.parse_args()
 
 
