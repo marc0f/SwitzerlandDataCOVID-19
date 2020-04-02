@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 parser = argparse.ArgumentParser(description='Generate plots from COVID-19 data. Two sources available: local and OpenZH.')
-parser.add_argument('--source', type=str, help='data source', default="OpenZH")
+parser.add_argument('--source', type=str, help='data source', default="local")
 args = parser.parse_args()
 
 
@@ -23,7 +23,7 @@ POPULATION = dict(
     Ticino=353709
 )
 
-AVG_ROLLING_WINDOW = 3
+AVG_ROLLING_WINDOW = 3  # [3, 7]
 
 
 def load_data_from_source():
@@ -146,8 +146,15 @@ def clean_and_fix_data(df, align_zero=False, per_population=False, avg_rolling_w
             subset[col] /= POPULATION.get(col) / 1e5
 
     if avg_rolling_window:
-        avg_subset = subset.rolling(window=avg_rolling_window).mean()
-        subset = subset.join(avg_subset.add_suffix(suffix=f" ({avg_rolling_window}-days avg)"))
+        if isinstance(avg_rolling_window, int):
+            avg_subset = subset.rolling(window=avg_rolling_window).mean()
+            subset = subset.join(avg_subset.add_suffix(suffix=f" ({avg_rolling_window}-days avg)"))
+
+        elif isinstance(avg_rolling_window, list):
+            _ref_subset = subset.copy()
+            for _avg_rolling_window in avg_rolling_window:
+                avg_subset = _ref_subset.rolling(window=_avg_rolling_window).mean()
+                subset = subset.join(avg_subset.add_suffix(suffix=f" ({_avg_rolling_window}-days avg)"))
 
     return subset
 
@@ -212,6 +219,19 @@ if __name__ == '__main__':
     df_intubated = clean_and_fix_data(df_intubated, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
     df_released = clean_and_fix_data(df_released, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
 
+    df_hospitalized_plus_deaths = None
+    for each_canton in CANTONS_LIST:
+
+        if df_hospitalized_plus_deaths is None:
+            df_hospitalized_plus_deaths = pd.DataFrame(df_hospitalized[each_canton['name']] + df_deaths[each_canton['name']])
+
+        else:
+            df_hospitalized_plus_deaths[each_canton['name']] = df_hospitalized[each_canton['name']] + df_deaths[each_canton['name']]
+
+    df_hospitalized_plus_deaths = df_hospitalized_plus_deaths.add_suffix(" - Hosp+Deaths")
+
+    df_hospitalized = df_hospitalized.join(df_hospitalized_plus_deaths)
+
     # plot cumulative data
     plot_multi(df_confirmed, figsize=FIGSIZE, title="# of confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     plot_multi(df_deaths, figsize=FIGSIZE, title="# of deaths", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
@@ -221,12 +241,12 @@ if __name__ == '__main__':
     plot_multi(df_released, figsize=FIGSIZE, title="# of released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     #
     # plot diff from previous day
-    plot_multi(df_confirmed.diff(), figsize=FIGSIZE, title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
-    plot_multi(df_deaths.diff(), figsize=FIGSIZE, title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION  or AVG_ROLLING_WINDOW, kind='bar')
-    plot_multi(df_hospitalized.diff(), figsize=FIGSIZE, title="Daily hospitalizzed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
-    plot_multi(df_icu.diff(), figsize=FIGSIZE, title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
-    plot_multi(df_intubated.diff(), figsize=FIGSIZE, title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
-    plot_multi(df_released.diff(), figsize=FIGSIZE, title="Daily released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, kind='bar')
+    plot_multi(df_confirmed.diff(), figsize=FIGSIZE, title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(df_deaths.diff(), figsize=FIGSIZE, title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION  or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(df_hospitalized.diff(), figsize=FIGSIZE, title="Daily hospitalizzed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(df_icu.diff(), figsize=FIGSIZE, title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(df_intubated.diff(), figsize=FIGSIZE, title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(df_released.diff(), figsize=FIGSIZE, title="Daily released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
 
     # # plot percentage changes day over day
     # plot_multi(df_confirmed.pct_change(),  figsize=FIGSIZE, title="Daily confirmed % growth change", same_plot=ALIGN_ZERO or PER_POPULATION)
