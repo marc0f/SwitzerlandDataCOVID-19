@@ -145,14 +145,30 @@ def clean_and_fix_data(df, align_zero=False, per_population=False, avg_rolling_w
         for col in subset:
             subset[col] /= POPULATION.get(col) / 1e5
 
-    if avg_rolling_window:
-        if isinstance(avg_rolling_window, int):
-            avg_subset = subset.rolling(window=avg_rolling_window).mean()
-            subset = subset.join(avg_subset.add_suffix(suffix=f" ({avg_rolling_window}-days avg)"))
+    # if avg_rolling_window:
+    #     if isinstance(avg_rolling_window, int):
+    #         avg_subset = subset.rolling(window=avg_rolling_window).mean()
+    #         subset = subset.join(avg_subset.add_suffix(suffix=f" ({avg_rolling_window}-days avg)"))
+    #
+    #     elif isinstance(avg_rolling_window, list):
+    #         _ref_subset = subset.copy()
+    #         for _avg_rolling_window in avg_rolling_window:
+    #             avg_subset = _ref_subset.rolling(window=_avg_rolling_window).mean()
+    #             subset = subset.join(avg_subset.add_suffix(suffix=f" ({_avg_rolling_window}-days avg)"))
 
-        elif isinstance(avg_rolling_window, list):
+    return subset
+
+
+def apply_avg(subset):
+
+    if AVG_ROLLING_WINDOW:
+        if isinstance(AVG_ROLLING_WINDOW, int):
+            avg_subset = subset.rolling(window=AVG_ROLLING_WINDOW).mean()
+            subset = subset.join(avg_subset.add_suffix(suffix=f" ({AVG_ROLLING_WINDOW}-days avg)"))
+
+        elif isinstance(AVG_ROLLING_WINDOW, list):
             _ref_subset = subset.copy()
-            for _avg_rolling_window in avg_rolling_window:
+            for _avg_rolling_window in AVG_ROLLING_WINDOW:
                 avg_subset = _ref_subset.rolling(window=_avg_rolling_window).mean()
                 subset = subset.join(avg_subset.add_suffix(suffix=f" ({_avg_rolling_window}-days avg)"))
 
@@ -233,20 +249,20 @@ if __name__ == '__main__':
     df_hospitalized = df_hospitalized.join(df_hospitalized_plus_deaths)
 
     # plot cumulative data
-    plot_multi(df_confirmed, figsize=FIGSIZE, title="# of confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(df_deaths, figsize=FIGSIZE, title="# of deaths", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(df_hospitalized, figsize=FIGSIZE, title="# of hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(df_icu, figsize=FIGSIZE, title="# of ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(df_intubated, figsize=FIGSIZE, title="# of intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(df_released, figsize=FIGSIZE, title="# of released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_confirmed), figsize=FIGSIZE, title="# of confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_deaths), figsize=FIGSIZE, title="# of deaths", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_hospitalized), figsize=FIGSIZE, title="# of hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_icu), figsize=FIGSIZE, title="# of ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_intubated), figsize=FIGSIZE, title="# of intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_released), figsize=FIGSIZE, title="# of released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     #
     # plot diff from previous day
-    plot_multi(df_confirmed.diff(), figsize=FIGSIZE, title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(df_deaths.diff(), figsize=FIGSIZE, title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION  or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(df_hospitalized.diff(), figsize=FIGSIZE, title="Daily hospitalizzed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(df_icu.diff(), figsize=FIGSIZE, title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(df_intubated.diff(), figsize=FIGSIZE, title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(df_released.diff(), figsize=FIGSIZE, title="Daily released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_confirmed.diff()), figsize=FIGSIZE, title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_deaths.diff()), figsize=FIGSIZE, title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION  or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_hospitalized.diff()), figsize=FIGSIZE, title="Daily hospitalizzed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_icu.diff()), figsize=FIGSIZE, title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_intubated.diff()), figsize=FIGSIZE, title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_released.diff()), figsize=FIGSIZE, title="Daily released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
 
     # # plot percentage changes day over day
     # plot_multi(df_confirmed.pct_change(),  figsize=FIGSIZE, title="Daily confirmed % growth change", same_plot=ALIGN_ZERO or PER_POPULATION)
@@ -256,12 +272,12 @@ if __name__ == '__main__':
     # plot_multi(df_intubated.pct_change(), figsize=FIGSIZE, title="Daily intubated % change", same_plot=ALIGN_ZERO or PER_POPULATION)
 
     # plot percentage growth day over day
-    plot_multi(df_confirmed.cumsum().pct_change(), figsize=FIGSIZE, title="Confirmed % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    plot_multi(df_deaths.cumsum().pct_change(), figsize=FIGSIZE, title="Deaths % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    plot_multi(df_hospitalized.cumsum().pct_change(), figsize=FIGSIZE, title="Recovered % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    plot_multi(df_icu.cumsum().pct_change(), figsize=FIGSIZE, title="ICU % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    plot_multi(df_intubated.cumsum().pct_change(), figsize=FIGSIZE, title="Intubated % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    plot_multi(df_released.cumsum().pct_change(), figsize=FIGSIZE, title="Relased % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    plot_multi(apply_avg(df_confirmed.cumsum().pct_change()), figsize=FIGSIZE, title="Confirmed % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    plot_multi(apply_avg(df_deaths.cumsum().pct_change()), figsize=FIGSIZE, title="Deaths % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    plot_multi(apply_avg(df_hospitalized.cumsum().pct_change()), figsize=FIGSIZE, title="Recovered % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    plot_multi(apply_avg(df_icu.cumsum().pct_change()), figsize=FIGSIZE, title="ICU % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    plot_multi(apply_avg(df_intubated.cumsum().pct_change()), figsize=FIGSIZE, title="Intubated % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    plot_multi(apply_avg(df_released.cumsum().pct_change()), figsize=FIGSIZE, title="Relased % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
 
     # # plot percentage changes from cumsum
     # plot_multi(df_confirmed / df_confirmed.cumsum(),  figsize=FIGSIZE, title="Daily confirmed % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
