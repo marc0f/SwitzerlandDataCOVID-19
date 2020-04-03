@@ -89,7 +89,7 @@ def load_data_from_source():
     return df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated, df_released
 
 
-def clean_and_fix_data(df, align_zero=False, per_population=False, avg_rolling_window=False):
+def clean_and_fix_data(df, align_zero=False, per_population=False):
 
     if SOURCE == 'local':
 
@@ -228,12 +228,12 @@ if __name__ == '__main__':
 
     df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated, df_released = load_data_from_source()
 
-    df_confirmed = clean_and_fix_data(df_confirmed, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
-    df_deaths = clean_and_fix_data(df_deaths, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
-    df_hospitalized = clean_and_fix_data(df_hospitalized,align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
-    df_icu = clean_and_fix_data(df_icu, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
-    df_intubated = clean_and_fix_data(df_intubated, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
-    df_released = clean_and_fix_data(df_released, align_zero=ALIGN_ZERO, per_population=PER_POPULATION, avg_rolling_window=AVG_ROLLING_WINDOW)
+    df_confirmed = clean_and_fix_data(df_confirmed, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
+    df_deaths = clean_and_fix_data(df_deaths, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
+    df_hospitalized = clean_and_fix_data(df_hospitalized,align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
+    df_icu = clean_and_fix_data(df_icu, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
+    df_intubated = clean_and_fix_data(df_intubated, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
+    df_released = clean_and_fix_data(df_released, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
 
     df_hospitalized_plus_deaths = None
     for each_canton in CANTONS_LIST:
