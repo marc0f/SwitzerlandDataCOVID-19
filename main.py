@@ -236,17 +236,31 @@ if __name__ == '__main__':
     df_released = clean_and_fix_data(df_released, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
 
     df_hospitalized_plus_deaths = None
+    df_hospitalized_plus_deaths_plus_released = None
     for each_canton in CANTONS_LIST:
 
+        canton_name = each_canton['name']
+
+        _df_hospitalized_plus_deaths = df_hospitalized[canton_name] + df_deaths[canton_name]
+        _df_hospitalized_plus_deaths_plus_released = _df_hospitalized_plus_deaths + df_released[canton_name]
+
         if df_hospitalized_plus_deaths is None:
-            df_hospitalized_plus_deaths = pd.DataFrame(df_hospitalized[each_canton['name']] + df_deaths[each_canton['name']])
+            df_hospitalized_plus_deaths = pd.DataFrame(_df_hospitalized_plus_deaths)
 
         else:
-            df_hospitalized_plus_deaths[each_canton['name']] = df_hospitalized[each_canton['name']] + df_deaths[each_canton['name']]
+            df_hospitalized_plus_deaths[canton_name] = _df_hospitalized_plus_deaths
+
+        if df_hospitalized_plus_deaths_plus_released is None:
+            df_hospitalized_plus_deaths_plus_released = pd.DataFrame(_df_hospitalized_plus_deaths_plus_released)
+
+        else:
+            df_hospitalized_plus_deaths_plus_released[canton_name] = _df_hospitalized_plus_deaths_plus_released
 
     df_hospitalized_plus_deaths = df_hospitalized_plus_deaths.add_suffix(" - Hosp+Deaths")
-
     df_hospitalized = df_hospitalized.join(df_hospitalized_plus_deaths)
+
+    df_hospitalized_plus_deaths_plus_released = df_hospitalized_plus_deaths_plus_released.add_suffix(" - Hosp+Deaths+Released")
+    df_hospitalized = df_hospitalized.join(df_hospitalized_plus_deaths_plus_released)
 
     # plot cumulative data
     plot_multi(apply_avg(df_confirmed), figsize=FIGSIZE, title="# of confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
@@ -259,7 +273,7 @@ if __name__ == '__main__':
     # plot diff from previous day
     plot_multi(apply_avg(df_confirmed.diff()), figsize=FIGSIZE, title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     plot_multi(apply_avg(df_deaths.diff()), figsize=FIGSIZE, title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION  or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(apply_avg(df_hospitalized.diff()), figsize=FIGSIZE, title="Daily hospitalizzed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_hospitalized.diff()), figsize=FIGSIZE, title="Daily hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     plot_multi(apply_avg(df_icu.diff()), figsize=FIGSIZE, title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     plot_multi(apply_avg(df_intubated.diff()), figsize=FIGSIZE, title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     plot_multi(apply_avg(df_released.diff()), figsize=FIGSIZE, title="Daily released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
@@ -277,7 +291,7 @@ if __name__ == '__main__':
     plot_multi(apply_avg(df_hospitalized.cumsum().pct_change()), figsize=FIGSIZE, title="Recovered % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
     plot_multi(apply_avg(df_icu.cumsum().pct_change()), figsize=FIGSIZE, title="ICU % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
     plot_multi(apply_avg(df_intubated.cumsum().pct_change()), figsize=FIGSIZE, title="Intubated % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    plot_multi(apply_avg(df_released.cumsum().pct_change()), figsize=FIGSIZE, title="Relased % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    plot_multi(apply_avg(df_released.cumsum().pct_change()), figsize=FIGSIZE, title="Released % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
 
     # # plot percentage changes from cumsum
     # plot_multi(df_confirmed / df_confirmed.cumsum(),  figsize=FIGSIZE, title="Daily confirmed % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
