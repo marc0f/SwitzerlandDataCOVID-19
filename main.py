@@ -256,6 +256,8 @@ if __name__ == '__main__':
         else:
             df_hospitalized_plus_deaths_plus_released[canton_name] = _df_hospitalized_plus_deaths_plus_released
 
+    df_hospitalized = df_hospitalized.add_suffix(" - Hosp")
+
     df_hospitalized_plus_deaths = df_hospitalized_plus_deaths.add_suffix(" - Hosp+Deaths")
     df_hospitalized = df_hospitalized.join(df_hospitalized_plus_deaths)
 
