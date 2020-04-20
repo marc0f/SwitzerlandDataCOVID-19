@@ -15,12 +15,15 @@ PLOT_PATH = "images"
 
 FIGSIZE = (20, 10)
 CANTONS_LIST = [
-    {'name': "Ticino", 'abb': 'TI'}]
+    {'name': "Ticino", 'abb': 'TI'},
+    # {'name': "Zurich", 'abb': 'ZH'}
+]
 ALIGN_ZERO = False
 PER_POPULATION = False
 
-POPULATION = dict(
-    Ticino=353709
+POPULATION = dict(  # in millions
+    Ticino=0.353709,
+    Zurich=1.521000
 )
 
 AVG_ROLLING_WINDOW = 3  # [3, 7]
