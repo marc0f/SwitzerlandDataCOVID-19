@@ -1,16 +1,25 @@
 import os
 import argparse
+import datetime
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+_datetime_fmt = "%Y-%m-%d"
 
-parser = argparse.ArgumentParser(description='Generate plots from COVID-19 data. Two sources available: local and OpenZH.')
-parser.add_argument('--source', type=str, help='data source', default="OpenZH")
+parser = argparse.ArgumentParser(description='Generate plots from COVID-19 data. Two sources available: local and OpenZH.',
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('--source', type=str, default="OpenZH", choices=['local', 'OpenZH'], help='Data source')
+parser.add_argument('--start_date', '-s', type=lambda s: datetime.datetime.strptime(s, _datetime_fmt), dest='start_datetime', default=datetime.datetime(2020, 2, 25).strftime(_datetime_fmt),
+                    help=f"Plots start datetime (format: Y-m-d)")
+parser.add_argument('--end_date', '-e', type=lambda s: datetime.datetime.strptime(s, _datetime_fmt), dest='end_datetime', default=datetime.datetime.now().strftime(_datetime_fmt),
+                    help="Plots end datetime (format: Y-m-d)")
 args = parser.parse_args()
 
 
 SOURCE = args.source  # 'local' or 'OpenZH'
+START_DATE = args.start_datetime
+END_DATE = args.end_datetime
 PLOT_PATH = "images"
 
 FIGSIZE = (20, 10)
@@ -88,6 +97,13 @@ def load_data_from_source():
             df_released = pd.DataFrame(
                 df_canton['ncumul_released'].rename(canton.get('name'))) if df_released is None else \
                 df_released.join(df_canton['ncumul_released'].rename(canton.get('name')))
+
+    df_confirmed = df_confirmed[START_DATE: END_DATE]
+    df_deaths = df_deaths[START_DATE: END_DATE]
+    df_hospitalized = df_hospitalized[START_DATE: END_DATE]
+    df_icu = df_icu[START_DATE: END_DATE]
+    df_intubated = df_intubated[START_DATE: END_DATE]
+    df_released = df_released[START_DATE: END_DATE]
 
     return df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated, df_released
 
