@@ -26,6 +26,7 @@ FIGSIZE = (20, 10)
 CANTONS_LIST = [
     {'name': "Ticino", 'abb': 'TI'},
     # {'name': "Zurich", 'abb': 'ZH'}
+    # {'name': "Zug", 'abb': 'ZG'},
 ]
 ALIGN_ZERO = False
 PER_POPULATION = False
