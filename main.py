@@ -300,6 +300,13 @@ if __name__ == '__main__':
     plot_multi(apply_avg(df_intubated.diff()), figsize=FIGSIZE, title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     plot_multi(apply_avg(df_released.diff()), figsize=FIGSIZE, title="Daily released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
 
+    # case per day of week
+    _df_confirmed = df_confirmed.diff()
+    _df_confirmed['week'] = _df_confirmed.index.week
+    _df_confirmed['day_of_week'] = _df_confirmed.index.day_name()
+    df_confirmed_by_day_of_week = _df_confirmed.pivot('week', columns='day_of_week', values='Ticino')
+    plot_multi(df_confirmed_by_day_of_week, figsize=FIGSIZE, title="Daily confirmed per Day Of Week", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+
     # # plot percentage changes day over day
     # plot_multi(df_confirmed.pct_change(),  figsize=FIGSIZE, title="Daily confirmed % growth change", same_plot=ALIGN_ZERO or PER_POPULATION)
     # plot_multi(df_deaths.pct_change(), figsize=FIGSIZE, title="Daily deaths % change", same_plot=ALIGN_ZERO or PER_POPULATION)
@@ -307,13 +314,13 @@ if __name__ == '__main__':
     # plot_multi(df_icu.pct_change(), figsize=FIGSIZE, title="Daily ICU % change", same_plot=ALIGN_ZERO or PER_POPULATION)
     # plot_multi(df_intubated.pct_change(), figsize=FIGSIZE, title="Daily intubated % change", same_plot=ALIGN_ZERO or PER_POPULATION)
 
-    # plot percentage growth day over day
-    plot_multi(apply_avg(df_confirmed.cumsum().pct_change()), figsize=FIGSIZE, title="Confirmed % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    plot_multi(apply_avg(df_deaths.cumsum().pct_change()), figsize=FIGSIZE, title="Deaths % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    plot_multi(apply_avg(df_hospitalized.cumsum().pct_change()), figsize=FIGSIZE, title="Recovered % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    plot_multi(apply_avg(df_icu.cumsum().pct_change()), figsize=FIGSIZE, title="ICU % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    plot_multi(apply_avg(df_intubated.cumsum().pct_change()), figsize=FIGSIZE, title="Intubated % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    plot_multi(apply_avg(df_released.cumsum().pct_change()), figsize=FIGSIZE, title="Released % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    # # plot percentage growth day over day
+    # plot_multi(apply_avg(df_confirmed.cumsum().pct_change()), figsize=FIGSIZE, title="Confirmed % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    # plot_multi(apply_avg(df_deaths.cumsum().pct_change()), figsize=FIGSIZE, title="Deaths % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    # plot_multi(apply_avg(df_hospitalized.cumsum().pct_change()), figsize=FIGSIZE, title="Recovered % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    # plot_multi(apply_avg(df_icu.cumsum().pct_change()), figsize=FIGSIZE, title="ICU % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    # plot_multi(apply_avg(df_intubated.cumsum().pct_change()), figsize=FIGSIZE, title="Intubated % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    # plot_multi(apply_avg(df_released.cumsum().pct_change()), figsize=FIGSIZE, title="Released % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
 
     # # plot percentage changes from cumsum
     # plot_multi(df_confirmed / df_confirmed.cumsum(),  figsize=FIGSIZE, title="Daily confirmed % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
