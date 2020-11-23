@@ -13,6 +13,8 @@ Plot data on Switzerland COVID-19.
 
 ![Daily Confirmed](images/OpenZHDaily_confirmed.png)
 
+![Daily Confirmed per Day Of Week](images/OpenZHDaily_confirmed_per_Day_Of_Week.png)
+
 ![Deaths](images/OpenZH%23_of_deaths.png)
 
 ![Deaths](images/OpenZHDaily_deaths.png)
@@ -32,11 +34,11 @@ Plot data on Switzerland COVID-19.
 Prepare the data source by cloning the Open_ZH repo in the root folder:
 
     git clone git@github.com:openZH/covid_19.git
-    
+
 Display data by run:
 
     python main.py
-    
+
 All images are saved in _images_ folder.
 
 ## Source
