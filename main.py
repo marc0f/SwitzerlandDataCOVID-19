@@ -36,7 +36,7 @@ POPULATION = dict(  # in millions
     Zurich=1.521000
 )
 
-AVG_ROLLING_WINDOW = 3  # [3, 7]
+AVG_ROLLING_WINDOW = 7  # [3, 7]
 
 
 def load_data_from_source():
