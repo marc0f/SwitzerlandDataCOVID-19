@@ -302,9 +302,10 @@ if __name__ == '__main__':
 
     # case per day of week
     _df_confirmed = df_confirmed.diff()
-    _df_confirmed['week'] = _df_confirmed.index.week
+    # assign monday date to dates within same week (monday to sunday)
+    _df_confirmed['week'] = _df_confirmed.index - pd.to_timedelta(_df_confirmed.index.dayofweek, unit='d')
     _df_confirmed['day_of_week'] = _df_confirmed.index.day_name()
-    df_confirmed_by_day_of_week = _df_confirmed.pivot('week', columns='day_of_week', values='Ticino')
+    df_confirmed_by_day_of_week = _df_confirmed.pivot(index='week', columns='day_of_week', values='Ticino')
     plot_multi(df_confirmed_by_day_of_week, figsize=FIGSIZE, title="Daily confirmed per Day Of Week", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
 
     # # plot percentage changes day over day
