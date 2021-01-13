@@ -15,6 +15,8 @@ Plot data on Switzerland COVID-19.
 
 ![Daily Confirmed per Day Of Week](images/OpenZHDaily_confirmed_per_Day_Of_Week.png)
 
+![Positivity Rate](images/OpenZHpositivity_rate.png)
+
 ![Deaths](images/OpenZH%23_of_deaths.png)
 
 ![Deaths](images/OpenZHDaily_deaths.png)

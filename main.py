@@ -47,6 +47,7 @@ def load_data_from_source():
     df_icu = None
     df_intubated = None
     df_released = None
+    df_positivity_rate = None
 
     if SOURCE == 'local':
         base_path = "data"
@@ -99,14 +100,24 @@ def load_data_from_source():
                 df_canton['ncumul_released'].rename(canton.get('name'))) if df_released is None else \
                 df_released.join(df_canton['ncumul_released'].rename(canton.get('name')))
 
+            # tests
+            base_path = f"covid_19/fallzahlen_tests/fallzahlen_kanton_{canton.get('abb')}_tests.csv"
+            df_canton = pd.read_csv(base_path, index_col='start_date', usecols=['start_date', 'total_tests', 'positivity_rate'])
+            # df_canton = pd.read_csv(base_path, index_col='start_date', usecols=['start_date', 'positivity_rate'])
+            df_canton.index = pd.to_datetime(df_canton.index)
+
+            df_positivity_rate = pd.DataFrame(df_canton.add_prefix(canton.get('name') + "_")) if df_positivity_rate is None else \
+                df_positivity_rate.join(df_canton.add_prefix(canton.get('name' + "_")))
+
     df_confirmed = df_confirmed[START_DATE: END_DATE]
     df_deaths = df_deaths[START_DATE: END_DATE]
     df_hospitalized = df_hospitalized[START_DATE: END_DATE]
     df_icu = df_icu[START_DATE: END_DATE]
     df_intubated = df_intubated[START_DATE: END_DATE]
     df_released = df_released[START_DATE: END_DATE]
+    df_positivity_rate = df_positivity_rate[START_DATE:END_DATE]
 
-    return df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated, df_released
+    return df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated, df_released, df_positivity_rate
 
 
 def clean_and_fix_data(df, align_zero=False, per_population=False):
@@ -246,7 +257,7 @@ def plot_multi(data, cols=None, spacing=.1, same_plot=False, **kwargs):
 
 if __name__ == '__main__':
 
-    df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated, df_released = load_data_from_source()
+    df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated, df_released, df_positivity_rate = load_data_from_source()
 
     df_confirmed = clean_and_fix_data(df_confirmed, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
     df_deaths = clean_and_fix_data(df_deaths, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
@@ -257,6 +268,7 @@ if __name__ == '__main__':
 
     df_hospitalized_plus_deaths = None
     df_hospitalized_plus_deaths_plus_released = None
+
     for each_canton in CANTONS_LIST:
 
         canton_name = each_canton['name']
@@ -291,7 +303,8 @@ if __name__ == '__main__':
     plot_multi(apply_avg(df_icu), figsize=FIGSIZE, title="# of ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     plot_multi(apply_avg(df_intubated), figsize=FIGSIZE, title="# of intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     plot_multi(apply_avg(df_released), figsize=FIGSIZE, title="# of released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    #
+    plot_multi(df_positivity_rate, figsize=FIGSIZE, title="positivity rate", same_plot=False, marker='o')
+
     # plot diff from previous day
     plot_multi(apply_avg(df_confirmed.diff()), figsize=FIGSIZE, title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
     plot_multi(apply_avg(df_deaths.diff()), figsize=FIGSIZE, title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION  or AVG_ROLLING_WINDOW, marker='o')
