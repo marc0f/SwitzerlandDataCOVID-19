@@ -81,7 +81,7 @@ def load_data_from_source():
 
     elif SOURCE == 'OpenZH':
 
-        # udate openzh data
+        # update openzh data
         openzh_data_pull()
 
         for canton in CANTONS_LIST:
