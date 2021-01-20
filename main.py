@@ -6,6 +6,7 @@ import datetime
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import git
 
 _datetime_fmt = "%Y-%m-%d"
 
@@ -23,6 +24,7 @@ SOURCE = args.source  # 'local' or 'OpenZH'
 START_DATE = args.start_datetime
 END_DATE = args.end_datetime
 PLOT_PATH = "images"
+OPENZH_REPO_DIR = 'covid_19'
 
 FIGSIZE = (20, 10)
 CANTONS_LIST = [
@@ -38,7 +40,16 @@ POPULATION = dict(  # in millions
     Zurich=1.521000
 )
 
+
 AVG_ROLLING_WINDOW = 7  # [3, 7]
+
+
+def openzh_data_pull():
+
+    print("Pulling OpenZH data...")
+    openzh_git = git.cmd.Git(OPENZH_REPO_DIR)
+    pull_response = openzh_git.pull()
+    print(pull_response)
 
 
 def load_data_from_source():
@@ -70,8 +81,11 @@ def load_data_from_source():
 
     elif SOURCE == 'OpenZH':
 
+        # udate openzh data
+        openzh_data_pull()
+
         for canton in CANTONS_LIST:
-            base_path = f"covid_19/fallzahlen_kanton_total_csv/COVID19_Fallzahlen_Kanton_{canton.get('abb')}_total.csv"
+            base_path = f"{OPENZH_REPO_DIR}/fallzahlen_kanton_total_csv/COVID19_Fallzahlen_Kanton_{canton.get('abb')}_total.csv"
 
             df_canton = pd.read_csv(base_path)
             df_canton.set_index('date', inplace=True, drop=True)
@@ -103,7 +117,7 @@ def load_data_from_source():
                 df_released.join(df_canton['ncumul_released'].rename(canton.get('name')))
 
             # tests
-            base_path = f"covid_19/fallzahlen_tests/fallzahlen_kanton_{canton.get('abb')}_tests.csv"
+            base_path = f"{OPENZH_REPO_DIR}/fallzahlen_tests/fallzahlen_kanton_{canton.get('abb')}_tests.csv"
             df_canton = pd.read_csv(base_path, index_col='start_date', usecols=['start_date', 'total_tests', 'positivity_rate'])
             # df_canton = pd.read_csv(base_path, index_col='start_date', usecols=['start_date', 'positivity_rate'])
             df_canton.index = pd.to_datetime(df_canton.index)
