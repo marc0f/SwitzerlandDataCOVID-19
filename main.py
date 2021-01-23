@@ -6,6 +6,9 @@ import datetime
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from plotly.offline import plot as poff
 import git
 
 _datetime_fmt = "%Y-%m-%d"
@@ -26,7 +29,7 @@ END_DATE = args.end_datetime
 PLOT_PATH = "images"
 OPENZH_REPO_DIR = 'covid_19'
 
-FIGSIZE = (20, 10)
+FIG_WIDTH = 2000
 CANTONS_LIST = [
     {'name': "Ticino", 'abb': 'TI'},
     # {'name': "Zurich", 'abb': 'ZH'}
@@ -222,53 +225,97 @@ def apply_avg(subset):
     return subset
 
 
-def plot_multi(data, cols=None, spacing=.1, same_plot=False, **kwargs):
+# def plot_multi(data, cols=None, spacing=.1, same_plot=False, **kwargs):
+#     """ref: https://stackoverflow.com/a/11643893/5490538"""
+#
+#     if same_plot:
+#         # data.index = data.index.format()
+#         ax = data.plot(**kwargs)
+#         # ax.xaxis.set_major_locator(mdates.DayLocator())
+#         # ax.xaxis.set_major_formatter(mdates.DateFormatter('%b - %d'))
+#         lines, labels = ax.get_legend_handles_labels()
+#         ax.legend(lines, labels, loc=2)
+#         # ax.format_xdata = mdates.DateFormatter('%Y-%m-%d')
+#         # ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
+#
+#     else:
+#         plt.figure()
+#         # Get default color style from pandas - can be changed to any other color list
+#         if cols is None: cols = data.columns
+#         if len(cols) == 0: return
+#         # colors = getattr(getattr(plotting, '_matplotlib').style, '_get_standard_colors')(num_colors=len(cols))
+#         c_colors = plt.get_cmap("tab10")
+#         colors = c_colors.colors
+#         # First axis
+#         ax = data.loc[:, cols[0]].plot(label=cols[0], color=colors[0], **kwargs)
+#         ax.set_ylabel(ylabel=cols[0])
+#         lines, labels = ax.get_legend_handles_labels()
+#
+#         for n in range(1, len(cols)):
+#             # Multiple y-axes
+#             ax_new = ax.twinx()
+#             ax_new.set_ylabel(ylabel=cols[n])
+#
+#             ax_new.spines['right'].set_position(('axes', 1 + spacing * (n - 1)))
+#             data.loc[:, cols[n]].plot(ax=ax_new, label=cols[n], color=colors[n % len(colors)], **kwargs)
+#             # ax_new.set_ylabel(ylabel=cols[n])
+#
+#             # Proper legend position
+#             line, label = ax_new.get_legend_handles_labels()
+#             lines += line
+#             labels += label
+#
+#         ax.legend(lines, labels, loc=2)
+#
+#     plt.gcf().autofmt_xdate()
+#     plt.grid(axis='y', color='0.95')
+#
+#     if SOURCE == 'OpenZH':
+#         plt.savefig(os.path.join(PLOT_PATH, SOURCE + kwargs.get('title').replace(" ", "_") + ".png"))
+
+def plot_multi(data, same_plot=False, **kwargs):
     """ref: https://stackoverflow.com/a/11643893/5490538"""
 
     if same_plot:
-        # data.index = data.index.format()
-        ax = data.plot(**kwargs)
-        # ax.xaxis.set_major_locator(mdates.DayLocator())
-        # ax.xaxis.set_major_formatter(mdates.DateFormatter('%b - %d'))
-        lines, labels = ax.get_legend_handles_labels()
-        ax.legend(lines, labels, loc=2)
-        # ax.format_xdata = mdates.DateFormatter('%Y-%m-%d')
-        # ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
+
+        fig = go.Figure()
+
+        for col in data.columns:
+
+            fig.add_trace(go.Scatter(
+                x=data.index,
+                y=data[col].values,
+                name=col,
+                mode=kwargs.get('mode', 'lines'),
+            ))
 
     else:
-        plt.figure()
-        # Get default color style from pandas - can be changed to any other color list
-        if cols is None: cols = data.columns
-        if len(cols) == 0: return
-        # colors = getattr(getattr(plotting, '_matplotlib').style, '_get_standard_colors')(num_colors=len(cols))
-        c_colors = plt.get_cmap("tab10")
-        colors = c_colors.colors
-        # First axis
-        ax = data.loc[:, cols[0]].plot(label=cols[0], color=colors[0], **kwargs)
-        ax.set_ylabel(ylabel=cols[0])
-        lines, labels = ax.get_legend_handles_labels()
 
-        for n in range(1, len(cols)):
-            # Multiple y-axes
-            ax_new = ax.twinx()
-            ax_new.set_ylabel(ylabel=cols[n])
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-            ax_new.spines['right'].set_position(('axes', 1 + spacing * (n - 1)))
-            data.loc[:, cols[n]].plot(ax=ax_new, label=cols[n], color=colors[n % len(colors)], **kwargs)
-            # ax_new.set_ylabel(ylabel=cols[n])
+        for col, chart_type in zip(data.columns, kwargs['types']):
 
-            # Proper legend position
-            line, label = ax_new.get_legend_handles_labels()
-            lines += line
-            labels += label
+            if chart_type == 'scatter':
+                fig.add_trace(go.Scatter(
+                    x=data.index,
+                    y=data[col].values,
+                    name=col,
+                    mode='lines+markers',
+                ), secondary_y=False)
 
-        ax.legend(lines, labels, loc=2)
+            elif chart_type == 'bars':
+                fig.add_trace(go.Bar(
+                    x=data.index,
+                    y=data[col].values,
+                    opacity=0.5,
+                    name=col
+                ), secondary_y=True)
 
-    plt.gcf().autofmt_xdate()
-    plt.grid(axis='y', color='0.95')
+    fig.update_layout(title=kwargs.get('title', 'No title'), yaxis_zeroline=True)
+    poff(fig)
 
     if SOURCE == 'OpenZH':
-        plt.savefig(os.path.join(PLOT_PATH, SOURCE + kwargs.get('title').replace(" ", "_") + ".png"))
+        fig.write_image(os.path.join(PLOT_PATH, SOURCE + kwargs.get('title').replace(" ", "_") + ".png"))
 
 
 if __name__ == '__main__':
@@ -313,21 +360,21 @@ if __name__ == '__main__':
     df_hospitalized = df_hospitalized.join(df_hospitalized_plus_deaths_plus_released)
 
     # plot cumulative data
-    plot_multi(apply_avg(df_confirmed), figsize=FIGSIZE, title="# of confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(apply_avg(df_deaths), figsize=FIGSIZE, title="# of deaths", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(apply_avg(df_hospitalized), figsize=FIGSIZE, title="# of hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(apply_avg(df_icu), figsize=FIGSIZE, title="# of ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(apply_avg(df_intubated), figsize=FIGSIZE, title="# of intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(apply_avg(df_released), figsize=FIGSIZE, title="# of released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(df_positivity_rate, figsize=FIGSIZE, title="positivity rate", same_plot=False, marker='o')
+    plot_multi(apply_avg(df_confirmed), title="# of confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_deaths), title="# of deaths", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_hospitalized), title="# of hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_icu), title="# of ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_intubated), title="# of intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_released), title="# of released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(df_positivity_rate, title="positivity rate", same_plot=False, mode='lines+markers', types=['bars', 'scatter'])
 
     # plot diff from previous day
-    plot_multi(apply_avg(df_confirmed.diff()), figsize=FIGSIZE, title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(apply_avg(df_deaths.diff()), figsize=FIGSIZE, title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION  or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(apply_avg(df_hospitalized.diff()), figsize=FIGSIZE, title="Daily hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(apply_avg(df_icu.diff()), figsize=FIGSIZE, title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(apply_avg(df_intubated.diff()), figsize=FIGSIZE, title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
-    plot_multi(apply_avg(df_released.diff()), figsize=FIGSIZE, title="Daily released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(apply_avg(df_confirmed.diff()), title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_deaths.diff()), title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION  or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_hospitalized.diff()), title="Daily hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_icu.diff()), title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_intubated.diff()), title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_released.diff()), title="Daily released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
 
     # case per day of week
     _df_confirmed = df_confirmed.diff()
@@ -335,26 +382,26 @@ if __name__ == '__main__':
     _df_confirmed['week'] = _df_confirmed.index - pd.to_timedelta(_df_confirmed.index.dayofweek, unit='d')
     _df_confirmed['day_of_week'] = _df_confirmed.index.day_name()
     df_confirmed_by_day_of_week = _df_confirmed.pivot(index='week', columns='day_of_week', values='Ticino')
-    plot_multi(df_confirmed_by_day_of_week, figsize=FIGSIZE, title="Daily confirmed per Day Of Week", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, marker='o')
+    plot_multi(df_confirmed_by_day_of_week, title="Daily confirmed per Day Of Week", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
 
     # # plot percentage changes day over day
-    # plot_multi(df_confirmed.pct_change(),  figsize=FIGSIZE, title="Daily confirmed % growth change", same_plot=ALIGN_ZERO or PER_POPULATION)
-    # plot_multi(df_deaths.pct_change(), figsize=FIGSIZE, title="Daily deaths % change", same_plot=ALIGN_ZERO or PER_POPULATION)
-    # plot_multi(df_hospitalized.pct_change(), figsize=FIGSIZE, title="Daily recovered % change", same_plot=ALIGN_ZERO or PER_POPULATION)
-    # plot_multi(df_icu.pct_change(), figsize=FIGSIZE, title="Daily ICU % change", same_plot=ALIGN_ZERO or PER_POPULATION)
-    # plot_multi(df_intubated.pct_change(), figsize=FIGSIZE, title="Daily intubated % change", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # plot_multi(df_confirmed.pct_change(),  title="Daily confirmed % growth change", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # plot_multi(df_deaths.pct_change(), title="Daily deaths % change", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # plot_multi(df_hospitalized.pct_change(), title="Daily recovered % change", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # plot_multi(df_icu.pct_change(), title="Daily ICU % change", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # plot_multi(df_intubated.pct_change(), title="Daily intubated % change", same_plot=ALIGN_ZERO or PER_POPULATION)
 
     # # plot percentage growth day over day
-    # plot_multi(apply_avg(df_confirmed.cumsum().pct_change()), figsize=FIGSIZE, title="Confirmed % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    # plot_multi(apply_avg(df_deaths.cumsum().pct_change()), figsize=FIGSIZE, title="Deaths % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    # plot_multi(apply_avg(df_hospitalized.cumsum().pct_change()), figsize=FIGSIZE, title="Recovered % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    # plot_multi(apply_avg(df_icu.cumsum().pct_change()), figsize=FIGSIZE, title="ICU % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    # plot_multi(apply_avg(df_intubated.cumsum().pct_change()), figsize=FIGSIZE, title="Intubated % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
-    # plot_multi(apply_avg(df_released.cumsum().pct_change()), figsize=FIGSIZE, title="Released % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    # plot_multi(apply_avg(df_confirmed.cumsum().pct_change()), title="Confirmed % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    # plot_multi(apply_avg(df_deaths.cumsum().pct_change()), title="Deaths % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    # plot_multi(apply_avg(df_hospitalized.cumsum().pct_change()), title="Recovered % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    # plot_multi(apply_avg(df_icu.cumsum().pct_change()), title="ICU % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    # plot_multi(apply_avg(df_intubated.cumsum().pct_change()), title="Intubated % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
+    # plot_multi(apply_avg(df_released.cumsum().pct_change()), title="Released % growth", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW)
 
     # # plot percentage changes from cumsum
-    # plot_multi(df_confirmed / df_confirmed.cumsum(),  figsize=FIGSIZE, title="Daily confirmed % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
-    # plot_multi(df_deaths / df_deaths.cumsum(), figsize=FIGSIZE, title="Daily deaths % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
-    # plot_multi(df_hospitalized / df_hospitalized.cumsum(), figsize=FIGSIZE, title="Daily recovered % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # plot_multi(df_confirmed / df_confirmed.cumsum(),  title="Daily confirmed % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # plot_multi(df_deaths / df_deaths.cumsum(), title="Daily deaths % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
+    # plot_multi(df_hospitalized / df_hospitalized.cumsum(), title="Daily recovered % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
 
     plt.show()
