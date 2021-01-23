@@ -27,7 +27,13 @@ SOURCE = args.source  # 'local' or 'OpenZH'
 START_DATE = args.start_datetime
 END_DATE = args.end_datetime
 PLOT_PATH = "images"
+ARTIFACT_PATH = "/tmp"
 OPENZH_REPO_DIR = 'covid_19'
+
+# init folders
+os.makedirs(PLOT_PATH, exist_ok=True)
+os.makedirs(ARTIFACT_PATH, exist_ok=True)
+
 
 FIG_WIDTH = 2000
 CANTONS_LIST = [
@@ -225,54 +231,6 @@ def apply_avg(subset):
     return subset
 
 
-# def plot_multi(data, cols=None, spacing=.1, same_plot=False, **kwargs):
-#     """ref: https://stackoverflow.com/a/11643893/5490538"""
-#
-#     if same_plot:
-#         # data.index = data.index.format()
-#         ax = data.plot(**kwargs)
-#         # ax.xaxis.set_major_locator(mdates.DayLocator())
-#         # ax.xaxis.set_major_formatter(mdates.DateFormatter('%b - %d'))
-#         lines, labels = ax.get_legend_handles_labels()
-#         ax.legend(lines, labels, loc=2)
-#         # ax.format_xdata = mdates.DateFormatter('%Y-%m-%d')
-#         # ax.fmt_xdata = mdates.DateFormatter('%Y-%m-%d')
-#
-#     else:
-#         plt.figure()
-#         # Get default color style from pandas - can be changed to any other color list
-#         if cols is None: cols = data.columns
-#         if len(cols) == 0: return
-#         # colors = getattr(getattr(plotting, '_matplotlib').style, '_get_standard_colors')(num_colors=len(cols))
-#         c_colors = plt.get_cmap("tab10")
-#         colors = c_colors.colors
-#         # First axis
-#         ax = data.loc[:, cols[0]].plot(label=cols[0], color=colors[0], **kwargs)
-#         ax.set_ylabel(ylabel=cols[0])
-#         lines, labels = ax.get_legend_handles_labels()
-#
-#         for n in range(1, len(cols)):
-#             # Multiple y-axes
-#             ax_new = ax.twinx()
-#             ax_new.set_ylabel(ylabel=cols[n])
-#
-#             ax_new.spines['right'].set_position(('axes', 1 + spacing * (n - 1)))
-#             data.loc[:, cols[n]].plot(ax=ax_new, label=cols[n], color=colors[n % len(colors)], **kwargs)
-#             # ax_new.set_ylabel(ylabel=cols[n])
-#
-#             # Proper legend position
-#             line, label = ax_new.get_legend_handles_labels()
-#             lines += line
-#             labels += label
-#
-#         ax.legend(lines, labels, loc=2)
-#
-#     plt.gcf().autofmt_xdate()
-#     plt.grid(axis='y', color='0.95')
-#
-#     if SOURCE == 'OpenZH':
-#         plt.savefig(os.path.join(PLOT_PATH, SOURCE + kwargs.get('title').replace(" ", "_") + ".png"))
-
 def plot_multi(data, same_plot=False, **kwargs):
     """ref: https://stackoverflow.com/a/11643893/5490538"""
 
@@ -312,10 +270,11 @@ def plot_multi(data, same_plot=False, **kwargs):
                 ), secondary_y=True)
 
     fig.update_layout(title=kwargs.get('title', 'No title'), yaxis_zeroline=True)
-    poff(fig)
+    poff(fig, auto_open=True, filename=os.path.join(ARTIFACT_PATH, SOURCE + kwargs.get('title').replace(" ", "_").replace("#", "n") + ".html"))
 
     if SOURCE == 'OpenZH':
-        fig.write_image(os.path.join(PLOT_PATH, SOURCE + kwargs.get('title').replace(" ", "_") + ".png"))
+        fig.write_image(os.path.join(PLOT_PATH, SOURCE + kwargs.get('title').replace(" ", "_") + ".png"),
+                        width=2000, height=1000, scale=1)
 
 
 if __name__ == '__main__':
