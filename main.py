@@ -244,7 +244,7 @@ def plot_multi(data, same_plot=False, **kwargs):
                 x=data.index,
                 y=data[col].values,
                 name=col,
-                mode=kwargs.get('mode', 'lines'),
+                mode=kwargs.get('mode', 'lines')
             ))
 
     else:
@@ -258,7 +258,7 @@ def plot_multi(data, same_plot=False, **kwargs):
                     x=data.index,
                     y=data[col].values,
                     name=col,
-                    mode='lines+markers',
+                    mode='lines+markers'
                 ), secondary_y=False)
 
             elif chart_type == 'bars':
@@ -270,6 +270,9 @@ def plot_multi(data, same_plot=False, **kwargs):
                 ), secondary_y=True)
 
     fig.update_layout(title=kwargs.get('title', 'No title'), yaxis_zeroline=True)
+    if kwargs.get('log_y', False):
+        fig.update_yaxes(type="log")
+
     poff(fig, auto_open=True, filename=os.path.join(ARTIFACT_PATH, SOURCE + kwargs.get('title').replace(" ", "_").replace("#", "n") + ".html"))
 
     if SOURCE == 'OpenZH':
@@ -342,6 +345,7 @@ if __name__ == '__main__':
     _df_confirmed['day_of_week'] = _df_confirmed.index.day_name()
     df_confirmed_by_day_of_week = _df_confirmed.pivot(index='week', columns='day_of_week', values='Ticino')
     plot_multi(df_confirmed_by_day_of_week, title="Daily confirmed per Day Of Week", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(df_confirmed_by_day_of_week, title="Daily confirmed per Day Of Week (log)", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers', log_y=True)
 
     # # plot percentage changes day over day
     # plot_multi(df_confirmed.pct_change(),  title="Daily confirmed % growth change", same_plot=ALIGN_ZERO or PER_POPULATION)
