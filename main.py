@@ -94,7 +94,8 @@ def load_data_from_source():
         openzh_data_pull()
 
         for canton in CANTONS_LIST:
-            base_path = f"{OPENZH_REPO_DIR}/fallzahlen_kanton_total_csv/COVID19_Fallzahlen_Kanton_{canton.get('abb')}_total.csv"
+            # base_path = f"{OPENZH_REPO_DIR}/fallzahlen_kanton_total_csv/COVID19_Fallzahlen_Kanton_{canton.get('abb')}_total.csv"
+            base_path = f"{OPENZH_REPO_DIR}/fallzahlen_kanton_total_csv_v2/COVID19_Fallzahlen_Kanton_{canton.get('abb')}_total.csv"
 
             df_canton = pd.read_csv(base_path)
             df_canton.set_index('date', inplace=True, drop=True)
@@ -106,14 +107,14 @@ def load_data_from_source():
             df_deaths = pd.DataFrame(df_canton['ncumul_deceased'].rename(canton.get('name'))) if df_deaths is None \
                 else df_deaths.join(df_canton['ncumul_deceased'].rename(canton.get('name')))
 
-            df_hospitalized = pd.DataFrame(df_canton['ncumul_hosp'].rename(canton.get('name'))) if df_hospitalized is None else \
-                df_hospitalized.join(df_canton['ncumul_hosp'].rename(canton.get('name')))
+            df_hospitalized = pd.DataFrame(df_canton['current_hosp'].rename(canton.get('name'))) if df_hospitalized is None else \
+                df_hospitalized.join(df_canton['current_hosp'].rename(canton.get('name')))
 
-            df_icu = pd.DataFrame(df_canton['ncumul_ICU'].rename(canton.get('name'))) if df_icu is None else \
-                df_icu.join(df_canton['ncumul_ICU'].rename(canton.get('name')))
+            df_icu = pd.DataFrame(df_canton['current_icu'].rename(canton.get('name'))) if df_icu is None else \
+                df_icu.join(df_canton['current_icu'].rename(canton.get('name')))
 
-            df_intubated = pd.DataFrame(df_canton['ncumul_vent'].rename(canton.get('name'))) if df_intubated is None else \
-                df_intubated.join(df_canton['ncumul_vent'].rename(canton.get('name')))
+            df_intubated = pd.DataFrame(df_canton['current_vent'].rename(canton.get('name'))) if df_intubated is None else \
+                df_intubated.join(df_canton['current_vent'].rename(canton.get('name')))
 
             # fix: for Ticino intubated moved from ncumul_vent to ninst_ICU_intub after 2020-03-23,08:00
             # mask_ncumul_ICU_intub_nan = df_canton['ninst_ICU_intub'].notna()
