@@ -1,5 +1,5 @@
 name: Run main.py to generate images with latest data (every day at 18:00)
-on: [push]
+on:
   schedule:
   #- cron: "0 18 * * *"
   - cron "*/10 * * * *"
