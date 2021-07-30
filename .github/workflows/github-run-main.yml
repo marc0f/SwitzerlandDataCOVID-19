@@ -1,7 +1,7 @@
 name: Run main.py to generate images with latest data (every day at 18:00)
-on:
-  schedule:
-    - cron: '0 18 * * *'
+on: [push]
+#  schedule:
+#    - cron: '0 18 * * *'
 
 jobs:
   build:
@@ -31,4 +31,4 @@ jobs:
           git config user.email github-run-main-action@github.com
           git add images/.
           git commit -m "auto-update at `date +'%Y-%m-%d %H:%M:%S'`"
-          git push
+          git diff-index --quiet HEAD || git push
