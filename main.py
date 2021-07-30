@@ -303,8 +303,9 @@ def plot_multi(data, same_plot=False, **kwargs):
         poff(fig, auto_open=True, filename=os.path.join(ARTIFACT_PATH, SOURCE + kwargs.get('title').replace(" ", "_").replace("#", "n") + ".html"))
 
     if SOURCE == 'OpenZH':
-        fig.write_image(os.path.join(PLOT_PATH, SOURCE + kwargs.get('title').replace(" ", "_") + ".png"),
-                        width=2000, height=1000, scale=1)
+        filename = os.path.join(PLOT_PATH, SOURCE + kwargs.get('title').replace(" ", "_") + ".png")
+        fig.write_image(filename, width=2000, height=1000, scale=1)
+        print(f"Create image: {filename}")
 
 
 def main():

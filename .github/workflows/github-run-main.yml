@@ -1,8 +1,8 @@
 name: Run main.py to generate images with latest data (every day at 18:00)
-on:
-  schedule:
-    #- cron: "0 18 * * *"
-    - cron: '*/10 * * * *'
+on: [push]
+#  schedule:
+#    #- cron: "0 18 * * *"
+#    - cron: '*/10 * * * *'
 
 jobs:
   build:
@@ -25,3 +25,9 @@ jobs:
           pip install -r requirements.txt
       - name: Run main.py
         run: python main.py
+
+      - name: Commit changes, new images
+        run: |
+          git add images/.
+          git commit -am "updated last data at: `date +'%Y-%m-%d %H:%M:%S'`"
+          git push originl master
