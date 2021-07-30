@@ -26,10 +26,10 @@ jobs:
       - name: Run main.py
         run: python main.py
 
-      - name: Commit changes, new images
+      - name: Commit new images
         run: |
           git config user.name github-run-main-action
           git config user.email github-run-main-action@github.com
           git add images/.
-          git commit -am "updated last data at: `date +'%Y-%m-%d %H:%M:%S'`"
-          git push originl master
+          git commit -m "updated last data at: `date +'%Y-%m-%d %H:%M:%S'`"
+          git push
