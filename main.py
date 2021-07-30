@@ -10,6 +10,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from plotly.offline import plot as poff
 import git
+import shutil
 
 _datetime_fmt = "%Y-%m-%d"
 
@@ -20,6 +21,7 @@ parser.add_argument('--start_date', '-s', type=lambda s: datetime.datetime.strpt
                     help=f"Plots start datetime (format: Y-m-d)")
 parser.add_argument('--end_date', '-e', type=lambda s: datetime.datetime.strptime(s, _datetime_fmt), dest='end_datetime', default=datetime.datetime.now().strftime(_datetime_fmt),
                     help="Plots end datetime (format: Y-m-d)")
+parser.add_argument('--show_plots', '-p', type=bool, dest='show_plots', default=False, help="If True displays plots")
 args = parser.parse_args()
 
 
@@ -28,7 +30,9 @@ START_DATE = args.start_datetime
 END_DATE = args.end_datetime
 PLOT_PATH = "images"
 ARTIFACT_PATH = "/tmp"
+OPENZH_REPO_URL = "https://github.com/openZH/covid_19.git"
 OPENZH_REPO_DIR = 'covid_19'
+
 
 # init folders
 os.makedirs(PLOT_PATH, exist_ok=True)
@@ -53,12 +57,31 @@ POPULATION = dict(  # in millions
 AVG_ROLLING_WINDOW = 7  # [3, 7]
 
 
-def openzh_data_pull():
+class Progress(git.RemoteProgress):
+    def update(self, op_code, cur_count, max_count=None, message=''):
+        print(f"update -> {op_code}, {cur_count}, {max_count}, {message}")
 
-    print("Pulling OpenZH data...")
-    openzh_git = git.cmd.Git(OPENZH_REPO_DIR)
-    pull_response = openzh_git.pull()
-    print(pull_response)
+
+git_progress = Progress()
+
+
+def clean_openzh_data():
+
+    if os.path.isdir(OPENZH_REPO_DIR):
+        # os.rmdir(OPENZH_REPO_DIR)
+        shutil.rmtree(OPENZH_REPO_DIR)
+
+
+def set_openzh_data():
+
+    clean_openzh_data()
+    print("Cloning OpenZH data...")
+    os.makedirs(OPENZH_REPO_DIR)
+    repo_instance = git.repo.Repo.clone_from(url=OPENZH_REPO_URL, to_path=OPENZH_REPO_DIR, progress=git_progress)
+    # openzh_git = git.cmd.Git(OPENZH_REPO_DIR)
+    # pull_response = openzh_git.pull()
+    # print(pull_response)
+    print()
 
 
 def load_data_from_source():
@@ -91,7 +114,7 @@ def load_data_from_source():
     elif SOURCE == 'OpenZH':
 
         # update openzh data
-        openzh_data_pull()
+        set_openzh_data()
 
         for canton in CANTONS_LIST:
             # base_path = f"{OPENZH_REPO_DIR}/fallzahlen_kanton_total_csv/COVID19_Fallzahlen_Kanton_{canton.get('abb')}_total.csv"
@@ -134,6 +157,8 @@ def load_data_from_source():
 
             df_positivity_rate = pd.DataFrame(df_canton.add_prefix(canton.get('name') + "_")) if df_positivity_rate is None else \
                 df_positivity_rate.join(df_canton.add_prefix(canton.get('name' + "_")))
+
+        clean_openzh_data()
 
     df_confirmed = df_confirmed[START_DATE: END_DATE]
     df_deaths = df_deaths[START_DATE: END_DATE]
@@ -274,20 +299,21 @@ def plot_multi(data, same_plot=False, **kwargs):
     if kwargs.get('log_y', False):
         fig.update_yaxes(type="log")
 
-    poff(fig, auto_open=True, filename=os.path.join(ARTIFACT_PATH, SOURCE + kwargs.get('title').replace(" ", "_").replace("#", "n") + ".html"))
+    if args.show_plots:
+        poff(fig, auto_open=True, filename=os.path.join(ARTIFACT_PATH, SOURCE + kwargs.get('title').replace(" ", "_").replace("#", "n") + ".html"))
 
     if SOURCE == 'OpenZH':
         fig.write_image(os.path.join(PLOT_PATH, SOURCE + kwargs.get('title').replace(" ", "_") + ".png"),
                         width=2000, height=1000, scale=1)
 
 
-if __name__ == '__main__':
+def main():
 
     df_confirmed, df_deaths, df_hospitalized, df_icu, df_intubated, df_released, df_positivity_rate = load_data_from_source()
 
     df_confirmed = clean_and_fix_data(df_confirmed, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
     df_deaths = clean_and_fix_data(df_deaths, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
-    df_hospitalized = clean_and_fix_data(df_hospitalized,align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
+    df_hospitalized = clean_and_fix_data(df_hospitalized, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
     df_icu = clean_and_fix_data(df_icu, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
     df_intubated = clean_and_fix_data(df_intubated, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
     df_released = clean_and_fix_data(df_released, align_zero=ALIGN_ZERO, per_population=PER_POPULATION)
@@ -325,19 +351,24 @@ if __name__ == '__main__':
     # plot cumulative data
     plot_multi(apply_avg(df_confirmed), title="# of confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
     plot_multi(apply_avg(df_deaths), title="# of deaths", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
-    plot_multi(apply_avg(df_hospitalized), title="# of hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_hospitalized), title="# of hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW,
+               mode='lines+markers')
     plot_multi(apply_avg(df_icu), title="# of ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
     plot_multi(apply_avg(df_intubated), title="# of intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
     plot_multi(apply_avg(df_released), title="# of released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
     plot_multi(df_positivity_rate, title="positivity rate", same_plot=False, mode='lines+markers', types=['bars', 'scatter'])
 
     # plot diff from previous day
-    plot_multi(apply_avg(df_confirmed.diff()), title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
-    plot_multi(apply_avg(df_deaths.diff()), title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION  or AVG_ROLLING_WINDOW, mode='lines+markers')
-    plot_multi(apply_avg(df_hospitalized.diff()), title="Daily hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_confirmed.diff()), title="Daily confirmed", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW,
+               mode='lines+markers')
+    plot_multi(apply_avg(df_deaths.diff()), title="Daily deaths", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_hospitalized.diff()), title="Daily hospitalized", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW,
+               mode='lines+markers')
     plot_multi(apply_avg(df_icu.diff()), title="Daily ICU", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
-    plot_multi(apply_avg(df_intubated.diff()), title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
-    plot_multi(apply_avg(df_released.diff()), title="Daily released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
+    plot_multi(apply_avg(df_intubated.diff()), title="Daily intubated", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW,
+               mode='lines+markers')
+    plot_multi(apply_avg(df_released.diff()), title="Daily released", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW,
+               mode='lines+markers')
 
     # case per day of week
     _df_confirmed = df_confirmed.diff()
@@ -345,8 +376,10 @@ if __name__ == '__main__':
     _df_confirmed['week'] = _df_confirmed.index - pd.to_timedelta(_df_confirmed.index.dayofweek, unit='d')
     _df_confirmed['day_of_week'] = _df_confirmed.index.day_name()
     df_confirmed_by_day_of_week = _df_confirmed.pivot(index='week', columns='day_of_week', values='Ticino')
-    plot_multi(df_confirmed_by_day_of_week, title="Daily confirmed per Day Of Week", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers')
-    plot_multi(df_confirmed_by_day_of_week, title="Daily confirmed per Day Of Week (log)", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers', log_y=True)
+    plot_multi(df_confirmed_by_day_of_week, title="Daily confirmed per Day Of Week", same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW,
+               mode='lines+markers')
+    plot_multi(df_confirmed_by_day_of_week, title="Daily confirmed per Day Of Week (log)",
+               same_plot=ALIGN_ZERO or PER_POPULATION or AVG_ROLLING_WINDOW, mode='lines+markers', log_y=True)
 
     # # plot percentage changes day over day
     # plot_multi(df_confirmed.pct_change(),  title="Daily confirmed % growth change", same_plot=ALIGN_ZERO or PER_POPULATION)
@@ -368,4 +401,7 @@ if __name__ == '__main__':
     # plot_multi(df_deaths / df_deaths.cumsum(), title="Daily deaths % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
     # plot_multi(df_hospitalized / df_hospitalized.cumsum(), title="Daily recovered % over cumsum", same_plot=ALIGN_ZERO or PER_POPULATION)
 
-    plt.show()
+
+if __name__ == '__main__':
+
+    main()
