@@ -31,6 +31,7 @@ END_DATE = args.end_datetime
 PLOT_PATH = "images"
 ARTIFACT_PATH = "/tmp"
 OPENZH_REPO_URL = "https://github.com/openZH/covid_19.git"
+OPENZH_REPO_RAWDATA_URL = "https://raw.githubusercontent.com/openZH/covid_19/master/"
 OPENZH_REPO_DIR = 'covid_19'
 
 
@@ -114,11 +115,12 @@ def load_data_from_source():
     elif SOURCE == 'OpenZH':
 
         # update openzh data
-        set_openzh_data()
+        # set_openzh_data()
 
         for canton in CANTONS_LIST:
             # base_path = f"{OPENZH_REPO_DIR}/fallzahlen_kanton_total_csv/COVID19_Fallzahlen_Kanton_{canton.get('abb')}_total.csv"
-            base_path = f"{OPENZH_REPO_DIR}/fallzahlen_kanton_total_csv_v2/COVID19_Fallzahlen_Kanton_{canton.get('abb')}_total.csv"
+            # base_path = f"{OPENZH_REPO_DIR}/fallzahlen_kanton_total_csv_v2/COVID19_Fallzahlen_Kanton_{canton.get('abb')}_total.csv"
+            base_path = f"{OPENZH_REPO_RAWDATA_URL}/fallzahlen_kanton_total_csv_v2/COVID19_Fallzahlen_Kanton_{canton.get('abb')}_total.csv"
 
             df_canton = pd.read_csv(base_path)
             df_canton.set_index('date', inplace=True, drop=True)
@@ -150,7 +152,7 @@ def load_data_from_source():
                 df_released.join(df_canton['ncumul_released'].rename(canton.get('name')))
 
             # tests
-            base_path = f"{OPENZH_REPO_DIR}/fallzahlen_tests/fallzahlen_kanton_{canton.get('abb')}_tests.csv"
+            base_path = f"{OPENZH_REPO_RAWDATA_URL}/fallzahlen_tests/fallzahlen_kanton_{canton.get('abb')}_tests.csv"
             df_canton = pd.read_csv(base_path, index_col='start_date', usecols=['start_date', 'total_tests', 'positivity_rate'])
             # df_canton = pd.read_csv(base_path, index_col='start_date', usecols=['start_date', 'positivity_rate'])
             df_canton.index = pd.to_datetime(df_canton.index)
@@ -158,7 +160,7 @@ def load_data_from_source():
             df_positivity_rate = pd.DataFrame(df_canton.add_prefix(canton.get('name') + "_")) if df_positivity_rate is None else \
                 df_positivity_rate.join(df_canton.add_prefix(canton.get('name' + "_")))
 
-        clean_openzh_data()
+        # clean_openzh_data()
 
     df_confirmed = df_confirmed[START_DATE: END_DATE]
     df_deaths = df_deaths[START_DATE: END_DATE]
