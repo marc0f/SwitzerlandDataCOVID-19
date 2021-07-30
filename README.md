@@ -33,13 +33,11 @@ Plot data on Switzerland COVID-19.
 
 ## Get started
 
-Prepare the data source by cloning the Open_ZH repo in the root folder:
+Display data:
 
-    git clone git@github.com:openZH/covid_19.git
-
-Display data by run:
-
+```
     python main.py
+```
 
 All images are saved in _images_ folder.
 

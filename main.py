@@ -21,7 +21,7 @@ parser.add_argument('--start_date', '-s', type=lambda s: datetime.datetime.strpt
                     help=f"Plots start datetime (format: Y-m-d)")
 parser.add_argument('--end_date', '-e', type=lambda s: datetime.datetime.strptime(s, _datetime_fmt), dest='end_datetime', default=datetime.datetime.now().strftime(_datetime_fmt),
                     help="Plots end datetime (format: Y-m-d)")
-parser.add_argument('--show_plots', '-p', type=bool, dest='show_plots', default=False, help="If True displays plots")
+parser.add_argument('--disable_plots', dest='disable_plots', action='store_true', default=False)
 args = parser.parse_args()
 
 
@@ -301,7 +301,7 @@ def plot_multi(data, same_plot=False, **kwargs):
     if kwargs.get('log_y', False):
         fig.update_yaxes(type="log")
 
-    if args.show_plots:
+    if not args.disable_plots:
         poff(fig, auto_open=True, filename=os.path.join(ARTIFACT_PATH, SOURCE + kwargs.get('title').replace(" ", "_").replace("#", "n") + ".html"))
 
     if SOURCE == 'OpenZH':
