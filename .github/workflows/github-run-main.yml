@@ -30,9 +30,11 @@ jobs:
           git config user.name github-run-main-action
           git config user.email github-run-main-action@github.com
           git add images/.
-          if ! git diff-index --quiet HEAD; then
-            git commit -m "auto-update at `date +'%Y-%m-%d %H:%M:%S'`"
-            git push
-          else
-            echo "ignore commit failure, proceed"
-          fi
+          git commit -m "auto-update at `date +'%Y-%m-%d %H:%M:%S'`"
+          git push
+          #if ! git diff-index --quiet HEAD; then
+          #  git commit -m "auto-update at `date +'%Y-%m-%d %H:%M:%S'`"
+          #  git push
+          #else
+          #  echo "ignore commit failure, proceed"
+          #fi
