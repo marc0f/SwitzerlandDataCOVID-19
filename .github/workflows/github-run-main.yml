@@ -1,8 +1,7 @@
 name: Run main.py to generate images with latest data (every day at 18:00)
-on: [push]
-  #schedule:
-  #  - cron: '0 18 * * *'
-
+on:
+  schedule:
+    - cron: '0 18 * * *'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,3 +29,10 @@ jobs:
           git add .
           git commit -m "auto-update at `date +'%Y-%m-%d %H:%M:%S'`"
           git push
+#          if ! git diff-index --quiet HEAD; then
+#            git commit -m "auto-update at `date +'%Y-%m-%d %H:%M:%S'`"
+#            git push
+#          else
+#            echo "ignore commit failure, proceed"
+#          fi
+
