@@ -23,7 +23,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run main.py
-        run: python main.py --disable_plots
+        run: python main.py
       - name: Commit new images
         run: |
           git config user.name github-run-main-action
@@ -32,9 +32,3 @@ jobs:
           git add images/.
           git commit -m "auto-update at `date +'%Y-%m-%d %H:%M:%S'`"
           git push
-          #if ! git diff-index --quiet HEAD; then
-          #  git commit -m "auto-update at `date +'%Y-%m-%d %H:%M:%S'`"
-          #  git push
-          #else
-          #  echo "ignore commit failure, proceed"
-          #fi
