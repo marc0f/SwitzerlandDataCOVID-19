@@ -24,7 +24,6 @@ jobs:
           pip install -r requirements.txt
       - name: Run main.py
         run: python main.py --disable_plots
-
       - name: Commit new images
         run: |
           git config user.name github-run-main-action
