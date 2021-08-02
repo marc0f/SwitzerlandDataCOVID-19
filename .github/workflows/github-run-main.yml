@@ -20,7 +20,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run main.py
-        run: python main.py
+        run: python main.py --disable_plots
       - name: Commit new images
         run: |
           git config user.name github-actions
