@@ -9,25 +9,25 @@ Plot data on Switzerland COVID-19.
 
 **NOTE:** More plots in the _images_ folder.
 
-![Confirmed](images/OpenZH%23_of_confirmed.png)
+![Confirmed](images/OpenZH%23_of_confirmed.png?raw=True)
 
-![Daily Confirmed](images/OpenZHDaily_confirmed.png)
+![Daily Confirmed](images/OpenZHDaily_confirmed.png?raw=True)
 
-![Daily Confirmed per Day Of Week](images/OpenZHDaily_confirmed_per_Day_Of_Week.png)
+![Daily Confirmed per Day Of Week](images/OpenZHDaily_confirmed_per_Day_Of_Week.png?raw=True)
 
-![Positivity Rate](images/OpenZHpositivity_rate.png)
+![Positivity Rate](images/OpenZHpositivity_rate.png?raw=True)
 
-![Deaths](images/OpenZH%23_of_deaths.png)
+![Deaths](images/OpenZH%23_of_deaths.png?raw=True)
 
-![Deaths](images/OpenZHDaily_deaths.png)
+![Deaths](images/OpenZHDaily_deaths.png?raw=True)
 
-![Hospitalized](images/OpenZH%23_of_hospitalized.png)
+![Hospitalized](images/OpenZH%23_of_hospitalized.png?raw=True)
 
-![ICU](images/OpenZH%23_of_ICU.png)
+![ICU](images/OpenZH%23_of_ICU.png?raw=True)
 
-![Intubated](images/OpenZH%23_of_intubated.png)
+![Intubated](images/OpenZH%23_of_intubated.png?raw=True)
 
-![Released](images/OpenZH%23_of_released.png)
+![Released](images/OpenZH%23_of_released.png?raw=True)
 
 
 
