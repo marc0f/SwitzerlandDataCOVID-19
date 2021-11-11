@@ -2,7 +2,7 @@
 
 Plot data on Switzerland COVID-19.
 
-**Project status**: Work in Progress.
+**Project status**: On Hold.
 
 
 ## Current status in Ticino
