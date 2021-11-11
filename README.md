@@ -5,7 +5,7 @@ Plot data on Switzerland COVID-19.
 **Project status**: Work in Progress.
 
 
-## Current situation in Ticino
+## Current status in Ticino
 
 **NOTE:** More plots in the _images_ folder.
 
